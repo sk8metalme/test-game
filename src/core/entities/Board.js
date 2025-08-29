@@ -299,4 +299,60 @@ export default class Board {
     }
     return false;
   }
+
+  /**
+   * ピースがボードと衝突するかチェック
+   * @param {Tetromino} piece - チェック対象のピース
+   * @returns {boolean} 衝突する場合true
+   */
+  isColliding(piece) {
+    if (!piece || typeof piece.getOccupiedCells !== 'function') {
+      return true;
+    }
+
+    const cells = piece.getOccupiedCells();
+    for (const cell of cells) {
+      // セルの形式を判定（配列 vs オブジェクト）
+      let dx, dy;
+      if (Array.isArray(cell)) {
+        [dx, dy] = cell;
+      } else if (cell && typeof cell === 'object') {
+        dx = cell.col;
+        dy = cell.row;
+      } else {
+        continue;
+      }
+      
+      const x = piece.x + dx;
+      const y = piece.y + dy;
+      
+      // 境界チェック
+      if (x < 0 || x >= this.COLS || y < 0 || y >= this.ROWS) {
+        return true;
+      }
+      
+      // 既存ピースとの衝突チェック
+      if (this.grid[y][x] !== 0) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
+  /**
+   * ボードの幅を取得
+   * @returns {number} ボード幅
+   */
+  get width() {
+    return this.COLS;
+  }
+
+  /**
+   * ボードの高さを取得
+   * @returns {number} ボード高さ
+   */
+  get height() {
+    return this.ROWS;
+  }
 }
