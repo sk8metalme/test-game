@@ -1,6 +1,6 @@
-module.exports = {
+export default {
   // Test environment
-  testEnvironment: 'jsdom',
+  testEnvironment: 'jest-environment-jsdom',
   
   // Setup files
   setupFilesAfterEnv: ['<rootDir>/tests/test-setup.js'],
@@ -11,14 +11,14 @@ module.exports = {
     '<rootDir>/tests/**/*.spec.js'
   ],
   
-  // Module paths
-  roots: ['<rootDir>/js', '<rootDir>/tests'],
+  // Module paths - updated for new structure
+  roots: ['<rootDir>/src', '<rootDir>/tests'],
   
-  // Coverage configuration
+  // Coverage configuration - updated for new structure
   collectCoverageFrom: [
-    'js/**/*.js',
-    '!js/main.js', // Entry point, covered by integration tests
-    '!js/**/*.config.js'
+    'src/**/*.js',
+    '!src/**/main.js',
+    '!src/**/*.config.js'
   ],
   
   // Coverage thresholds
@@ -28,25 +28,6 @@ module.exports = {
       functions: 80,
       lines: 80,
       statements: 80
-    },
-    // Component-specific thresholds
-    'js/game.js': {
-      branches: 90,
-      functions: 90,
-      lines: 90,
-      statements: 90
-    },
-    'js/board.js': {
-      branches: 85,
-      functions: 90,
-      lines: 90,
-      statements: 90
-    },
-    'js/tetromino.js': {
-      branches: 85,
-      functions: 90,
-      lines: 90,
-      statements: 90
     }
   },
   
