@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Performance Test - Tetris Prototype</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: white;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        canvas {
+            border: 2px solid #444;
+            background-color: #000;
+        }
+        .controls {
+            padding: 20px;
+            background-color: #333;
+            border-radius: 8px;
+        }
+        .metrics {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #444;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            background-color: #666;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #777;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎮 Tetris Canvas Performance Test</h1>
+    
+    <div class="container">
+        <canvas id="gameCanvas" width="400" height="800"></canvas>
+        
+        <div class="controls">
+            <h3>📊 Performance Test Controls</h3>
+            <button onclick="startTest()">Start Performance Test</button>
+            <button onclick="stopTest()">Stop Test</button>
+            <button onclick="clearCanvas()">Clear Canvas</button>
+            
+            <div class="metrics">
+                <h4>📈 Real-time Metrics</h4>
+                <div class="stats">
+                    <div>FPS: <span id="fps">0</span></div>
+                    <div>Frame Time: <span id="frameTime">0</span>ms</div>
+                    <div>Blocks Drawn: <span id="blocksDrawn">0</span></div>
+                    <div>Memory Usage: <span id="memoryUsage">0</span>MB</div>
+                </div>
+                
+                <h4>🎯 Performance Targets</h4>
+                <div class="stats">
+                    <div>Target FPS: 60</div>
+                    <div>Target Frame Time: &lt;16.67ms</div>
+                    <div>Max Memory: &lt;50MB</div>
+                    <div>Draw Calls: Optimized</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Canvas Performance Test for Tetris
+        class CanvasPerformanceTest {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.isRunning = false;
+                this.animationId = null;
+                
+                // Performance tracking
+                this.fps = 0;
+                this.frameCount = 0;
+                this.lastTime = 0;
+                this.fpsStartTime = 0;
+                
+                // Tetris board simulation
+                this.BOARD_WIDTH = 10;
+                this.BOARD_HEIGHT = 20;
+                this.BLOCK_SIZE = 20;
+                this.board = this.createBoard();
+                
+                // Test patterns
+                this.testBlocks = [];
+                this.animationOffset = 0;
+                
+                this.initializeTestData();
+            }
+            
+            createBoard() {
+                return Array(this.BOARD_HEIGHT).fill(null).map(() => 
+                    Array(this.BOARD_WIDTH).fill(0)
+                );
+            }
+            
+            initializeTestData() {
+                // テスト用のブロックパターンを作成
+                for (let i = 0; i < 50; i++) {
+                    this.testBlocks.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        size: 10 + Math.random() * 20,
+                        color: this.getRandomColor(),
+                        velocity: {
+                            x: (Math.random() - 0.5) * 4,
+                            y: (Math.random() - 0.5) * 4
+                        }
+                    });
+                }
+            }
+            
+            getRandomColor() {
+                const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE'];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+            
+            start() {
+                if (this.isRunning) return;
+                
+                this.isRunning = true;
+                this.fpsStartTime = performance.now();
+                this.frameCount = 0;
+                this.gameLoop();
+                
+                console.log('🚀 Canvas performance test started');
+            }
+            
+            stop() {
+                if (!this.isRunning) return;
+                
+                this.isRunning = false;
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                }
+                
+                console.log('⏹️ Canvas performance test stopped');
+            }
+            
+            gameLoop() {
+                if (!this.isRunning) return;
+                
+                const currentTime = performance.now();
+                const deltaTime = currentTime - this.lastTime;
+                this.lastTime = currentTime;
+                
+                // Update
+                this.update(deltaTime);
+                
+                // Draw
+                this.draw();
+                
+                // Performance tracking
+                this.trackPerformance(currentTime);
+                
+                // Continue loop
+                this.animationId = requestAnimationFrame(() => this.gameLoop());
+            }
+            
+            update(deltaTime) {
+                this.animationOffset += deltaTime * 0.001;
+                
+                // アニメーションブロックの更新
+                this.testBlocks.forEach(block => {
+                    block.x += block.velocity.x;
+                    block.y += block.velocity.y;
+                    
+                    // 画面端での反射
+                    if (block.x <= 0 || block.x >= this.canvas.width - block.size) {
+                        block.velocity.x *= -1;
+                    }
+                    if (block.y <= 0 || block.y >= this.canvas.height - block.size) {
+                        block.velocity.y *= -1;
+                    }
+                });
+            }
+            
+            draw() {
+                // Clear canvas
+                this.ctx.fillStyle = '#000';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw Tetris grid
+                this.drawGrid();
+                
+                // Draw test blocks
+                this.drawTestBlocks();
+                
+                // Draw simulated Tetris pieces
+                this.drawTetrisPieces();
+                
+                // Draw UI elements
+                this.drawUI();
+            }
+            
+            drawGrid() {
+                this.ctx.strokeStyle = '#333';
+                this.ctx.lineWidth = 1;
+                
+                // Vertical lines
+                for (let x = 0; x <= this.BOARD_WIDTH; x++) {
+                    const posX = x * this.BLOCK_SIZE + 50;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(posX, 50);
+                    this.ctx.lineTo(posX, this.BOARD_HEIGHT * this.BLOCK_SIZE + 50);
+                    this.ctx.stroke();
+                }
+                
+                // Horizontal lines
+                for (let y = 0; y <= this.BOARD_HEIGHT; y++) {
+                    const posY = y * this.BLOCK_SIZE + 50;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(50, posY);
+                    this.ctx.lineTo(this.BOARD_WIDTH * this.BLOCK_SIZE + 50, posY);
+                    this.ctx.stroke();
+                }
+            }
+            
+            drawTestBlocks() {
+                this.testBlocks.forEach(block => {
+                    this.ctx.fillStyle = block.color;
+                    this.ctx.fillRect(block.x, block.y, block.size, block.size);
+                    
+                    // Add glow effect
+                    this.ctx.shadowColor = block.color;
+                    this.ctx.shadowBlur = 5;
+                    this.ctx.fillRect(block.x, block.y, block.size, block.size);
+                    this.ctx.shadowBlur = 0;
+                });
+            }
+            
+            drawTetrisPieces() {
+                // シミュレートされたテトリスピースの描画
+                const pieces = [
+                    { color: '#FF6B6B', blocks: [[0,0], [1,0], [0,1], [1,1]] }, // O piece
+                    { color: '#4ECDC4', blocks: [[1,0], [0,1], [1,1], [2,1]] }, // T piece
+                    { color: '#45B7D1', blocks: [[0,0], [0,1], [0,2], [0,3]] }, // I piece
+                ];
+                
+                pieces.forEach((piece, index) => {
+                    const startX = 300;
+                    const startY = 100 + index * 100 + Math.sin(this.animationOffset + index) * 20;
+                    
+                    this.ctx.fillStyle = piece.color;
+                    piece.blocks.forEach(([bx, by]) => {
+                        const x = startX + bx * this.BLOCK_SIZE;
+                        const y = startY + by * this.BLOCK_SIZE;
+                        this.ctx.fillRect(x, y, this.BLOCK_SIZE - 1, this.BLOCK_SIZE - 1);
+                    });
+                });
+            }
+            
+            drawUI() {
+                // FPS表示
+                this.ctx.fillStyle = '#FFF';
+                this.ctx.font = '16px Arial';
+                this.ctx.fillText(`FPS: ${this.fps}`, 10, 30);
+                this.ctx.fillText(`Blocks: ${this.testBlocks.length}`, 10, 50);
+            }
+            
+            trackPerformance(currentTime) {
+                this.frameCount++;
+                
+                // FPS計算（1秒ごと）
+                if (currentTime - this.fpsStartTime >= 1000) {
+                    this.fps = Math.round(this.frameCount * 1000 / (currentTime - this.fpsStartTime));
+                    this.frameCount = 0;
+                    this.fpsStartTime = currentTime;
+                    
+                    // Update UI
+                    this.updateMetricsDisplay();
+                }
+            }
+            
+            updateMetricsDisplay() {
+                document.getElementById('fps').textContent = this.fps;
+                document.getElementById('frameTime').textContent = (1000/this.fps).toFixed(2);
+                document.getElementById('blocksDrawn').textContent = this.testBlocks.length;
+                
+                // Memory usage (if available)
+                if (performance.memory) {
+                    const memoryMB = (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(2);
+                    document.getElementById('memoryUsage').textContent = memoryMB;
+                }
+            }
+            
+            clear() {
+                this.ctx.fillStyle = '#000';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            }
+        }
+        
+        // Global instance
+        let performanceTest;
+        
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            performanceTest = new CanvasPerformanceTest();
+            console.log('🎮 Canvas Performance Test initialized');
+        });
+        
+        // Control functions
+        function startTest() {
+            if (performanceTest) {
+                performanceTest.start();
+            }
+        }
+        
+        function stopTest() {
+            if (performanceTest) {
+                performanceTest.stop();
+            }
+        }
+        
+        function clearCanvas() {
+            if (performanceTest) {
+                performanceTest.clear();
+            }
+        }
+        
+        // Performance monitoring
+        setInterval(() => {
+            if (performanceTest && performanceTest.isRunning) {
+                const fps = performanceTest.fps;
+                if (fps < 50) {
+                    console.warn(`⚠️ Performance warning: FPS dropped to ${fps}`);
+                }
+            }
+        }, 5000);
+    </script>
+</body>
+</html>
