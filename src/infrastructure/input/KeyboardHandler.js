@@ -139,7 +139,7 @@ export default class KeyboardHandler {
 
     const currentTime = Date.now();
     
-    for (const [key, dasState] of this.dasStates) {
+    for (const [, dasState] of this.dasStates) {
       if (this._shouldTriggerDAS(dasState, currentTime)) {
         this._executeAction(dasState.action);
         dasState.lastTrigger = currentTime;
@@ -367,7 +367,10 @@ export default class KeyboardHandler {
       try {
         callback();
       } catch (error) {
-        console.warn(`KeyboardHandler: Action ${action} failed:`, error);
+        // エラーログは本番環境では無効化
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(`KeyboardHandler: Action ${action} failed:`, error);
+        }
       }
     }
   }
