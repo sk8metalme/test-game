@@ -868,4 +868,45 @@ export class GameState {
 
     return isValid;
   }
+
+  /**
+   * ゲーム状態をリセット
+   */
+  resetGame() {
+    this.status = 'MENU';
+    this.score = 0;
+    this.level = 1;
+    this.lines = 0;
+    this.gameTime = 0;
+    this.combo = 0;
+    this.isBackToBack = false;
+    
+    // 統計情報をリセット（totalGamesは維持）
+    const currentTotalGames = this.statistics.totalGames;
+    this.statistics = {
+      totalGames: currentTotalGames,
+      score: 0,
+      lines: 0,
+      time: 0,
+      highScore: this.statistics.highScore || 0,
+      bestLevel: this.statistics.bestLevel || 1,
+      pieceUsage: {
+        I: 0, O: 0, T: 0, S: 0, Z: 0, J: 0, L: 0
+      },
+      actionCounts: {
+        move: 0,
+        rotate: 0,
+        hardDrop: 0,
+        softDrop: 0,
+        hold: 0
+      }
+    };
+  }
+
+  /**
+   * 総ゲーム数を増加
+   */
+  incrementTotalGames() {
+    this.statistics.totalGames++;
+  }
 }
