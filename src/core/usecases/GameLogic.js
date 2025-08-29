@@ -324,7 +324,7 @@ export default class GameLogic {
       return this._getOperationError();
     }
 
-    const startY = this.currentPiece.y;
+    // const startY = this.currentPiece.y; // 未使用のため一時的にコメントアウト
     let distance = 0;
 
     // 底まで移動

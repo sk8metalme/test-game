@@ -607,7 +607,7 @@ export class GameState {
    * @param {string} pieceType - ピースタイプ（I, O, T, S, Z, J, L）
    */
   incrementPieceUsage(pieceType) {
-    if (this.statistics.pieceUsage.hasOwnProperty(pieceType)) {
+    if (Object.prototype.hasOwnProperty.call(this.statistics.pieceUsage, pieceType)) {
       this.statistics.pieceUsage[pieceType]++;
     }
   }
@@ -618,7 +618,7 @@ export class GameState {
    * @param {string} actionType - アクションタイプ
    */
   incrementActionCount(actionType) {
-    if (this.statistics.actionCounts.hasOwnProperty(actionType)) {
+    if (Object.prototype.hasOwnProperty.call(this.statistics.actionCounts, actionType)) {
       this.statistics.actionCounts[actionType]++;
     }
   }
@@ -734,7 +734,9 @@ export class GameState {
       try {
         listener(eventData);
       } catch (error) {
-        console.warn(`Event listener error for ${eventType}:`, error);
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(`Event listener error for ${eventType}:`, error);
+        }
       }
     });
   }
