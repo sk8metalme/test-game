@@ -93,6 +93,11 @@ export default class Board {
    * @throws {Error} 範囲外の場合
    */
   validatePosition(row, col) {
+    // NaNや浮動小数点のチェック
+    if (!Number.isInteger(row) || !Number.isInteger(col)) {
+      throw new Error(`Position must be integers: (${row}, ${col})`);
+    }
+    
     if (row < 0 || row >= this.ROWS || col < 0 || col >= this.COLS) {
       throw new Error(`Position out of bounds: (${row}, ${col})`);
     }
@@ -220,6 +225,10 @@ export default class Board {
    * @param {Array<Array<number>>} state 設定するグリッド状態
    */
   setState(state) {
+    if (state === null || state === undefined) {
+      throw new Error('Invalid state: cannot be null or undefined');
+    }
+    
     if (!Array.isArray(state) || state.length !== this.ROWS) {
       throw new Error('Invalid state: must be 20x10 grid');
     }

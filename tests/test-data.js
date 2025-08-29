@@ -325,6 +325,151 @@ export const EDGE_CASES = {
   ]
 };
 
+// Integration test scenarios for TODAY-003
+export const INTEGRATION_SCENARIOS = {
+  SIMPLE_PLACEMENT: {
+    description: 'Simple piece placement scenario',
+    pieces: [
+      { type: 'T', position: { x: 4, y: 18 }, rotations: 0 },
+      { type: 'O', position: { x: 6, y: 18 }, rotations: 0 }
+    ],
+    expectedResult: {
+      piecesPlaced: 2,
+      linesCleared: 0
+    }
+  },
+  
+  LINE_CLEAR: {
+    description: 'Line clearing scenario',
+    boardSetup: [
+      { row: 19, pattern: [1,1,1,1,0,1,1,1,1,1] }
+    ],
+    pieces: [
+      { type: 'I', position: { x: 4, y: 16 }, rotations: 1 }
+    ],
+    expectedResult: {
+      piecesPlaced: 1,
+      linesCleared: 1
+    }
+  },
+  
+  COMPLEX_GAME_FLOW: {
+    description: 'Complex multi-piece game flow',
+    pieces: [
+      { type: 'I', position: { x: 0, y: 16 }, rotations: 1 },
+      { type: 'O', position: { x: 1, y: 18 }, rotations: 0 },
+      { type: 'T', position: { x: 3, y: 17 }, rotations: 0 },
+      { type: 'L', position: { x: 6, y: 17 }, rotations: 0 },
+      { type: 'S', position: { x: 8, y: 17 }, rotations: 0 }
+    ],
+    expectedResult: {
+      piecesPlaced: 5,
+      linesCleared: 0,
+      minFillPercentage: 15
+    }
+  }
+};
+
+// Test utilities for integration and advanced testing
+export const TestUtils = {
+  // Create board with specific pattern
+  createBoardWithPattern(pattern) {
+    // Note: This requires Board to be imported separately by the test file
+    throw new Error('createBoardWithPattern requires Board class to be passed as parameter');
+  },
+
+  // Create random filled board
+  createRandomBoard(fillPercentage = 0.3) {
+    // Note: This requires Board to be imported separately by the test file
+    throw new Error('createRandomBoard requires Board class to be passed as parameter');
+  },
+
+  // Performance measurement utility
+  measurePerformance(operation, iterations = 1) {
+    const startTime = performance.now();
+    
+    for (let i = 0; i < iterations; i++) {
+      operation();
+    }
+    
+    const endTime = performance.now();
+    return {
+      totalTime: endTime - startTime,
+      averageTime: (endTime - startTime) / iterations,
+      iterations
+    };
+  },
+
+  // Memory usage measurement
+  measureMemoryUsage() {
+    if (typeof process !== 'undefined' && process.memoryUsage) {
+      return process.memoryUsage();
+    }
+    // Fallback for browser environment
+    return {
+      heapUsed: 0,
+      heapTotal: 0,
+      external: 0,
+      rss: 0
+    };
+  },
+
+  // Generate test piece sequence
+  generatePieceSequence(count = 7) {
+    const types = ['I', 'O', 'T', 'S', 'Z', 'J', 'L'];
+    return Array(count).fill(null).map((_, i) => ({
+      type: types[i % 7],
+      position: { x: 4, y: 0 },
+      rotations: i % 4
+    }));
+  },
+
+  // Validate test results
+  validateIntegrationResult(actual, expected) {
+    const errors = [];
+    
+    if (expected.piecesPlaced !== undefined && actual.piecesPlaced !== expected.piecesPlaced) {
+      errors.push(`Expected ${expected.piecesPlaced} pieces placed, got ${actual.piecesPlaced}`);
+    }
+    
+    if (expected.linesCleared !== undefined && actual.linesCleared !== expected.linesCleared) {
+      errors.push(`Expected ${expected.linesCleared} lines cleared, got ${actual.linesCleared}`);
+    }
+    
+    if (expected.minFillPercentage !== undefined && actual.fillPercentage < expected.minFillPercentage) {
+      errors.push(`Expected minimum ${expected.minFillPercentage}% fill, got ${actual.fillPercentage}%`);
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }
+};
+
+// Performance thresholds for TODAY-003
+export const PERFORMANCE_THRESHOLDS = {
+  // Timing thresholds (milliseconds)
+  SINGLE_OPERATION: 1,
+  BATCH_OPERATIONS: 100,
+  LARGE_DATASET: 1000,
+  MEMORY_PRESSURE: 2000,
+  
+  // Memory thresholds (bytes)
+  MEMORY_LEAK_THRESHOLD: 10 * 1024 * 1024, // 10MB
+  PEAK_MEMORY_THRESHOLD: 50 * 1024 * 1024, // 50MB
+  
+  // Iteration counts
+  STRESS_TEST_ITERATIONS: 1000,
+  PERFORMANCE_TEST_ITERATIONS: 500,
+  MEMORY_TEST_CYCLES: 100,
+  
+  // Game performance
+  TARGET_FPS: 60,
+  FRAME_TIME_MS: 16.67,
+  INPUT_LATENCY_MS: 16
+};
+
 // Export all test data as default object
 export default {
   TETROMINO_SHAPES,
@@ -336,5 +481,8 @@ export default {
   GAME_STATE_SCENARIOS,
   BROWSER_FEATURES,
   VISUAL_TEST_SCENARIOS,
-  EDGE_CASES
+  EDGE_CASES,
+  INTEGRATION_SCENARIOS,
+  TestUtils,
+  PERFORMANCE_THRESHOLDS
 };
