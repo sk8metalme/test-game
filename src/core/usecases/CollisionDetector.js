@@ -255,7 +255,7 @@ export default class CollisionDetector {
     let distance = 0;
 
     // 1セルずつ下に移動して衝突まで探索
-            for (let attemptIndex = 0; attemptIndex < kickTable.length; attemptIndex++) {
+    while (distance < this.board.height) {
       const testPiece = this._createTestPiece(piece, piece.x, ghostY + 1);
       
       if (this.checkCollision(testPiece).hasCollision) {
