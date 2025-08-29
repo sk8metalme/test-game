@@ -21,19 +21,47 @@ export default {
     '!src/**/*.config.js'
   ],
   
-  // Coverage thresholds
+  // Coverage thresholds - Enhanced for TODAY-003
   coverageThreshold: {
     global: {
-      branches: 80,
-      functions: 80,
-      lines: 80,
-      statements: 80
+      branches: 90,
+      functions: 95,
+      lines: 95,
+      statements: 95
+    },
+    // Individual file thresholds
+    'src/core/entities/Board.js': {
+      branches: 95,
+      functions: 100,
+      lines: 98,
+      statements: 98
+    },
+    'src/core/entities/Tetromino.js': {
+      branches: 95,
+      functions: 100,
+      lines: 98,
+      statements: 98
     }
   },
   
-  // Coverage reporting
+  // Coverage reporting - Enhanced for TODAY-003
   coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'lcov', 'html'],
+  coverageReporters: [
+    'text',
+    'text-summary', 
+    'lcov', 
+    'html',
+    'json',
+    'clover'
+  ],
+  
+  // Coverage pathIgnorePatterns
+  coveragePathIgnorePatterns: [
+    '/node_modules/',
+    '/tests/',
+    '/coverage/',
+    '/.git/'
+  ],
   
   // Transform configuration for ES6 modules
   transform: {
