@@ -292,6 +292,32 @@ export class DOMTestHelper {
       },
     };
   }
+
+  /**
+   * Canvasモック設定
+   * @param {Object} mockCanvas - モックCanvas要素
+   */
+  static setupCanvasMock(mockCanvas) {
+    // グローバルにCanvas要素を設定
+    global.HTMLCanvasElement = class MockHTMLCanvasElement {
+      constructor() {
+        return mockCanvas;
+      }
+    };
+
+    // document.createElement('canvas')のモック
+    if (global.document) {
+      global.document.createElement = jest.fn(tagName => {
+        if (tagName === 'canvas') {
+          return mockCanvas;
+        }
+        return {
+          addEventListener: jest.fn(),
+          removeEventListener: jest.fn(),
+        };
+      });
+    }
+  }
 }
 
 /**
