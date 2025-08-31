@@ -1,11 +1,13 @@
 /**
- * Tetromino Component Unit Tests
- * テトロミノピースの形状、回転、位置管理をテストします
+ * Tetromino Unit Tests
+ * テトロミノクラスの単体テスト
  */
 
-import { TETROMINO_SHAPES, TETROMINO_COLORS, EDGE_CASES } from '../test-data.js';
+describe('Tetromino', () => {
+  beforeEach(() => {
+    // テトロミノテスト用のセットアップ
+  });
 
-describe('Tetromino Component', () => {
   describe('テトロミノの生成', () => {
     test('I字ピースが正しい形状で生成される', () => {
       // const iPiece = new Tetromino('I');
@@ -55,7 +57,7 @@ describe('Tetromino Component', () => {
     test('T字ピースが時計回りに回転する', () => {
       // const tPiece = new Tetromino('T');
       // const originalShape = JSON.parse(JSON.stringify(tPiece.shape));
-      // 
+      //
       // tPiece.rotate();
       // expect(tPiece.shape).not.toEqual(originalShape);
       // expect(tPiece.rotation).toBe(1);
@@ -65,12 +67,12 @@ describe('Tetromino Component', () => {
     test('4回回転すると元の形状に戻る', () => {
       // const tPiece = new Tetromino('T');
       // const originalShape = JSON.parse(JSON.stringify(tPiece.shape));
-      // 
+      //
       // tPiece.rotate();
       // tPiece.rotate();
       // tPiece.rotate();
       // tPiece.rotate();
-      // 
+      //
       // expect(tPiece.shape).toEqual(originalShape);
       // expect(tPiece.rotation).toBe(0);
       expect(true).toBe(true); // プレースホルダー
@@ -79,11 +81,11 @@ describe('Tetromino Component', () => {
     test('I字ピースの回転（2状態のみ）', () => {
       // const iPiece = new Tetromino('I');
       // const horizontalShape = iPiece.shape;
-      // 
+      //
       // iPiece.rotate(); // 垂直
       // const verticalShape = iPiece.shape;
       // expect(verticalShape).not.toEqual(horizontalShape);
-      // 
+      //
       // iPiece.rotate(); // 水平に戻る
       // expect(iPiece.shape).toEqual(horizontalShape);
       expect(true).toBe(true); // プレースホルダー
@@ -92,7 +94,7 @@ describe('Tetromino Component', () => {
     test('O字ピースは回転しても形状が変わらない', () => {
       // const oPiece = new Tetromino('O');
       // const originalShape = JSON.parse(JSON.stringify(oPiece.shape));
-      // 
+      //
       // oPiece.rotate();
       // expect(oPiece.shape).toEqual(originalShape);
       expect(true).toBe(true); // プレースホルダー
@@ -101,14 +103,14 @@ describe('Tetromino Component', () => {
     test('反時計回りの回転', () => {
       // const tPiece = new Tetromino('T');
       // const originalShape = JSON.parse(JSON.stringify(tPiece.shape));
-      // 
+      //
       // tPiece.rotate(false); // 反時計回り
       // expect(tPiece.rotation).toBe(3);
-      // 
+      //
       // tPiece.rotate(false);
       // tPiece.rotate(false);
       // tPiece.rotate(false);
-      // 
+      //
       // expect(tPiece.shape).toEqual(originalShape);
       expect(true).toBe(true); // プレースホルダー
     });
@@ -118,7 +120,7 @@ describe('Tetromino Component', () => {
     test('ピースを左に移動できる', () => {
       // const piece = new Tetromino('T');
       // const originalX = piece.position.x;
-      // 
+      //
       // piece.moveLeft();
       // expect(piece.position.x).toBe(originalX - 1);
       expect(true).toBe(true); // プレースホルダー
@@ -127,7 +129,7 @@ describe('Tetromino Component', () => {
     test('ピースを右に移動できる', () => {
       // const piece = new Tetromino('T');
       // const originalX = piece.position.x;
-      // 
+      //
       // piece.moveRight();
       // expect(piece.position.x).toBe(originalX + 1);
       expect(true).toBe(true); // プレースホルダー
@@ -136,7 +138,7 @@ describe('Tetromino Component', () => {
     test('ピースを下に移動できる', () => {
       // const piece = new Tetromino('T');
       // const originalY = piece.position.y;
-      // 
+      //
       // piece.moveDown();
       // expect(piece.position.y).toBe(originalY + 1);
       expect(true).toBe(true); // プレースホルダー
@@ -145,7 +147,7 @@ describe('Tetromino Component', () => {
     test('特定の位置に設定できる', () => {
       // const piece = new Tetromino('T');
       // piece.setPosition(7, 15);
-      // 
+      //
       // expect(piece.position.x).toBe(7);
       // expect(piece.position.y).toBe(15);
       expect(true).toBe(true); // プレースホルダー
@@ -154,7 +156,7 @@ describe('Tetromino Component', () => {
     test('ハードドロップで底まで移動', () => {
       // const piece = new Tetromino('T');
       // const mockBoard = { checkCollision: jest.fn(() => false) };
-      // 
+      //
       // const droppedDistance = piece.hardDrop(mockBoard);
       // expect(droppedDistance).toBeGreaterThan(0);
       // expect(piece.position.y).toBe(18); // 底近く
@@ -166,10 +168,10 @@ describe('Tetromino Component', () => {
     test('テトロミノの幅を正しく計算する', () => {
       // const iPiece = new Tetromino('I');
       // expect(iPiece.getWidth()).toBe(4);
-      // 
+      //
       // const oPiece = new Tetromino('O');
       // expect(oPiece.getWidth()).toBe(2);
-      // 
+      //
       // const tPiece = new Tetromino('T');
       // expect(tPiece.getWidth()).toBe(3);
       expect(true).toBe(true); // プレースホルダー
@@ -178,10 +180,10 @@ describe('Tetromino Component', () => {
     test('テトロミノの高さを正しく計算する', () => {
       // const iPiece = new Tetromino('I');
       // expect(iPiece.getHeight()).toBe(1);
-      // 
+      //
       // const oPiece = new Tetromino('O');
       // expect(oPiece.getHeight()).toBe(2);
-      // 
+      //
       // const tPiece = new Tetromino('T');
       // expect(tPiece.getHeight()).toBe(2);
       expect(true).toBe(true); // プレースホルダー
@@ -191,7 +193,7 @@ describe('Tetromino Component', () => {
       // const iPiece = new Tetromino('I');
       // expect(iPiece.getWidth()).toBe(4);
       // expect(iPiece.getHeight()).toBe(1);
-      // 
+      //
       // iPiece.rotate();
       // expect(iPiece.getWidth()).toBe(1);
       // expect(iPiece.getHeight()).toBe(4);
@@ -201,7 +203,7 @@ describe('Tetromino Component', () => {
     test('実際の占有セルを取得できる', () => {
       // const tPiece = new Tetromino('T');
       // tPiece.setPosition(5, 10);
-      // 
+      //
       // const occupiedCells = tPiece.getOccupiedCells();
       // expect(occupiedCells).toContainEqual({ x: 6, y: 10 }); // T字の上部
       // expect(occupiedCells).toContainEqual({ x: 5, y: 11 }); // T字の左下
@@ -215,13 +217,13 @@ describe('Tetromino Component', () => {
     test('壁際での回転時にキックが機能する', () => {
       // const tPiece = new Tetromino('T');
       // tPiece.setPosition(0, 10); // 左端
-      // 
-      // const mockBoard = { 
+      //
+      // const mockBoard = {
       //   checkCollision: jest.fn()
       //     .mockReturnValueOnce(true) // 通常回転は衝突
       //     .mockReturnValueOnce(false) // 右に1つずらすと成功
       // };
-      // 
+      //
       // const rotated = tPiece.rotateWithKick(mockBoard);
       // expect(rotated).toBe(true);
       // expect(tPiece.position.x).toBe(1); // キックで右に移動
@@ -232,11 +234,11 @@ describe('Tetromino Component', () => {
       // const tPiece = new Tetromino('T');
       // const originalRotation = tPiece.rotation;
       // const originalPosition = { ...tPiece.position };
-      // 
-      // const mockBoard = { 
+      //
+      // const mockBoard = {
       //   checkCollision: jest.fn(() => true) // 全てのキック試行が失敗
       // };
-      // 
+      //
       // const rotated = tPiece.rotateWithKick(mockBoard);
       // expect(rotated).toBe(false);
       // expect(tPiece.rotation).toBe(originalRotation);
@@ -248,7 +250,7 @@ describe('Tetromino Component', () => {
       // const iPiece = new Tetromino('I');
       // // I字ピースは特殊なキックパターンを持つ
       // const mockBoard = { checkCollision: jest.fn(() => false) };
-      // 
+      //
       // const rotated = iPiece.rotateWithKick(mockBoard);
       // expect(rotated).toBe(true);
       expect(true).toBe(true); // プレースホルダー
@@ -260,13 +262,13 @@ describe('Tetromino Component', () => {
       // const original = new Tetromino('T');
       // original.setPosition(5, 10);
       // original.rotate();
-      // 
+      //
       // const clone = original.clone();
       // expect(clone.type).toBe(original.type);
       // expect(clone.position).toEqual(original.position);
       // expect(clone.rotation).toBe(original.rotation);
       // expect(clone.shape).toEqual(original.shape);
-      // 
+      //
       // // 独立性を確認
       // clone.moveLeft();
       // expect(clone.position.x).not.toBe(original.position.x);
@@ -277,10 +279,10 @@ describe('Tetromino Component', () => {
       // const piece1 = new Tetromino('T');
       // const piece2 = new Tetromino('T');
       // const piece3 = new Tetromino('I');
-      // 
+      //
       // expect(piece1.equals(piece2)).toBe(true);
       // expect(piece1.equals(piece3)).toBe(false);
-      // 
+      //
       // piece2.rotate();
       // expect(piece1.equals(piece2)).toBe(false);
       expect(true).toBe(true); // プレースホルダー
@@ -291,7 +293,7 @@ describe('Tetromino Component', () => {
     test('ゴーストピースの位置を計算できる', () => {
       // const piece = new Tetromino('T');
       // piece.setPosition(4, 5);
-      // 
+      //
       // const mockBoard = {
       //   checkCollision: jest.fn()
       //     .mockReturnValue(false)
@@ -299,7 +301,7 @@ describe('Tetromino Component', () => {
       //     .mockReturnValueOnce(false)
       //     .mockReturnValueOnce(true) // y=8で衝突
       // };
-      // 
+      //
       // const ghostPosition = piece.getGhostPosition(mockBoard);
       // expect(ghostPosition.y).toBe(7); // 衝突する1つ上
       expect(true).toBe(true); // プレースホルダー
@@ -308,11 +310,11 @@ describe('Tetromino Component', () => {
     test('すでに底にあるピースのゴースト位置', () => {
       // const piece = new Tetromino('T');
       // piece.setPosition(4, 18);
-      // 
+      //
       // const mockBoard = {
       //   checkCollision: jest.fn(() => true) // すぐに衝突
       // };
-      // 
+      //
       // const ghostPosition = piece.getGhostPosition(mockBoard);
       // expect(ghostPosition).toEqual(piece.position);
       expect(true).toBe(true); // プレースホルダー
@@ -339,11 +341,11 @@ describe('Tetromino Component', () => {
     test('大量の回転操作が効率的に実行される', () => {
       // const piece = new Tetromino('T');
       // const startTime = performance.now();
-      // 
+      //
       // for (let i = 0; i < 1000; i++) {
       //   piece.rotate();
       // }
-      // 
+      //
       // const endTime = performance.now();
       // expect(endTime - startTime).toBeLessThan(10); // 10ms以下
       expect(true).toBe(true); // プレースホルダー
@@ -352,13 +354,13 @@ describe('Tetromino Component', () => {
     test('衝突判定計算が効率的', () => {
       // const piece = new Tetromino('T');
       // const mockBoard = { checkCollision: jest.fn(() => false) };
-      // 
+      //
       // const startTime = performance.now();
-      // 
+      //
       // for (let i = 0; i < 1000; i++) {
       //   piece.getOccupiedCells();
       // }
-      // 
+      //
       // const endTime = performance.now();
       // expect(endTime - startTime).toBeLessThan(5); // 5ms以下
       expect(true).toBe(true); // プレースホルダー
