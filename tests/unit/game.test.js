@@ -1,16 +1,15 @@
 /**
- * Game Core Logic Unit Tests
- * ゲームの主要ロジック、状態管理、スコアリングをテストします
+ * Game Unit Tests
+ * ゲームクラスの単体テスト
  */
 
-import { GAME_STATE_SCENARIOS, SCORING_SCENARIOS, INPUT_SEQUENCES } from '../test-data.js';
-
-describe('Game Core Logic', () => {
-  let game;
-
+describe('Game', () => {
   beforeEach(() => {
-    // Game クラスが実装されたら、ここでインスタンスを作成
+    // ゲームテスト用のセットアップ
     // game = new Game();
+
+    // DOM要素のモック
+    document.body.innerHTML = '<canvas id="gameCanvas" width="400" height="800"></canvas>';
   });
 
   describe('ゲーム初期化', () => {
@@ -106,12 +105,12 @@ describe('Game Core Logic', () => {
       // const game = new Game();
       // game.start();
       // const generatedPieces = [];
-      // 
+      //
       // // 7個のピースを生成
       // for (let i = 0; i < 7; i++) {
       //   generatedPieces.push(game.generateNextPiece());
       // }
-      // 
+      //
       // // 全てのピースタイプが1つずつ含まれることを確認
       // const expectedTypes = ['I', 'O', 'T', 'S', 'Z', 'J', 'L'];
       // expectedTypes.forEach(type => {
@@ -124,10 +123,10 @@ describe('Game Core Logic', () => {
       // const game = new Game();
       // game.start();
       // const piece = game.currentPiece;
-      // 
+      //
       // // 底に配置
       // piece.setPosition(4, 18);
-      // 
+      //
       // // ロック遅延をシミュレート
       // game.update(1000); // 1秒経過
       // expect(game.isCurrentPieceLocked()).toBe(true);
@@ -137,12 +136,12 @@ describe('Game Core Logic', () => {
     test('スポーン位置での衝突でゲームオーバー', () => {
       // const game = new Game();
       // game.start();
-      // 
+      //
       // // 上部を埋める
       // for (let col = 0; col < 10; col++) {
       //   game.board.setCell(0, col, 1);
       // }
-      // 
+      //
       // game.spawnNextPiece();
       // expect(game.state).toBe('GAME_OVER');
       expect(true).toBe(true); // プレースホルダー
@@ -154,7 +153,7 @@ describe('Game Core Logic', () => {
       // const game = new Game();
       // game.start();
       // const originalX = game.currentPiece.position.x;
-      // 
+      //
       // const moved = game.moveCurrentPiece('left');
       // expect(moved).toBe(true);
       // expect(game.currentPiece.position.x).toBe(originalX - 1);
@@ -165,7 +164,7 @@ describe('Game Core Logic', () => {
       // const game = new Game();
       // game.start();
       // const originalX = game.currentPiece.position.x;
-      // 
+      //
       // const moved = game.moveCurrentPiece('right');
       // expect(moved).toBe(true);
       // expect(game.currentPiece.position.x).toBe(originalX + 1);
@@ -176,7 +175,7 @@ describe('Game Core Logic', () => {
       // const game = new Game();
       // game.start();
       // const originalY = game.currentPiece.position.y;
-      // 
+      //
       // const moved = game.moveCurrentPiece('down');
       // expect(moved).toBe(true);
       // expect(game.currentPiece.position.y).toBe(originalY + 1);
@@ -186,7 +185,7 @@ describe('Game Core Logic', () => {
     test('壁際での移動が制限される', () => {
       // const game = new Game();
       // game.start();
-      // 
+      //
       // // 左端に移動
       // game.currentPiece.setPosition(0, 10);
       // const moved = game.moveCurrentPiece('left');
@@ -199,7 +198,7 @@ describe('Game Core Logic', () => {
       // const game = new Game();
       // game.start();
       // const originalRotation = game.currentPiece.rotation;
-      // 
+      //
       // const rotated = game.rotateCurrentPiece();
       // expect(rotated).toBe(true);
       // expect(game.currentPiece.rotation).not.toBe(originalRotation);
@@ -210,7 +209,7 @@ describe('Game Core Logic', () => {
       // const game = new Game();
       // game.start();
       // const originalY = game.currentPiece.position.y;
-      // 
+      //
       // const distance = game.hardDropCurrentPiece();
       // expect(distance).toBeGreaterThan(0);
       // expect(game.currentPiece.position.y).toBeGreaterThan(originalY);
@@ -222,10 +221,10 @@ describe('Game Core Logic', () => {
     test('シングルライン削除の正しいスコア計算', () => {
       // const game = new Game();
       // game.start();
-      // 
+      //
       // const initialScore = game.score;
       // game.clearLines(1);
-      // 
+      //
       // const expectedScore = SCORING_SCENARIOS.SINGLE_LINE.expectedScore;
       // expect(game.score).toBe(initialScore + expectedScore);
       expect(true).toBe(true); // プレースホルダー
@@ -234,10 +233,10 @@ describe('Game Core Logic', () => {
     test('ダブルライン削除の正しいスコア計算', () => {
       // const game = new Game();
       // game.start();
-      // 
+      //
       // const initialScore = game.score;
       // game.clearLines(2);
-      // 
+      //
       // const expectedScore = SCORING_SCENARIOS.DOUBLE_LINE.expectedScore;
       // expect(game.score).toBe(initialScore + expectedScore);
       expect(true).toBe(true); // プレースホルダー
@@ -246,10 +245,10 @@ describe('Game Core Logic', () => {
     test('テトリス（4ライン）の正しいスコア計算', () => {
       // const game = new Game();
       // game.start();
-      // 
+      //
       // const initialScore = game.score;
       // game.clearLines(4);
-      // 
+      //
       // const expectedScore = SCORING_SCENARIOS.TETRIS.expectedScore;
       // expect(game.score).toBe(initialScore + expectedScore);
       expect(true).toBe(true); // プレースホルダー
@@ -259,10 +258,10 @@ describe('Game Core Logic', () => {
       // const game = new Game();
       // game.start();
       // game.level = 5;
-      // 
+      //
       // const initialScore = game.score;
       // game.clearLines(1);
-      // 
+      //
       // const expectedScore = SCORING_SCENARIOS.LEVEL_MULTIPLIER.expectedScore;
       // expect(game.score).toBe(initialScore + expectedScore);
       expect(true).toBe(true); // プレースホルダー
@@ -271,10 +270,10 @@ describe('Game Core Logic', () => {
     test('ソフトドロップスコア', () => {
       // const game = new Game();
       // game.start();
-      // 
+      //
       // const initialScore = game.score;
       // game.addSoftDropScore(10);
-      // 
+      //
       // expect(game.score).toBe(initialScore + 10);
       expect(true).toBe(true); // プレースホルダー
     });
@@ -282,10 +281,10 @@ describe('Game Core Logic', () => {
     test('ハードドロップスコア', () => {
       // const game = new Game();
       // game.start();
-      // 
+      //
       // const initialScore = game.score;
       // game.addHardDropScore(15);
-      // 
+      //
       // expect(game.score).toBe(initialScore + 30); // 2倍
       expect(true).toBe(true); // プレースホルダー
     });
@@ -295,7 +294,7 @@ describe('Game Core Logic', () => {
     test('ライン数に応じてレベルが上がる', () => {
       // const game = new Game();
       // game.start();
-      // 
+      //
       // // 10ライン削除でレベル2に
       // game.linesCleared = 10;
       // game.updateLevel();
@@ -307,10 +306,10 @@ describe('Game Core Logic', () => {
       // const game = new Game();
       // game.start();
       // const initialDropInterval = game.dropInterval;
-      // 
+      //
       // game.level = 2;
       // game.updateDropInterval();
-      // 
+      //
       // expect(game.dropInterval).toBeLessThan(initialDropInterval);
       expect(true).toBe(true); // プレースホルダー
     });
@@ -318,10 +317,10 @@ describe('Game Core Logic', () => {
     test('最大レベル制限', () => {
       // const game = new Game();
       // game.start();
-      // 
+      //
       // game.linesCleared = 1000; // 大量のライン
       // game.updateLevel();
-      // 
+      //
       // expect(game.level).toBeLessThanOrEqual(20); // 最大レベル20
       expect(true).toBe(true); // プレースホルダー
     });
@@ -332,11 +331,11 @@ describe('Game Core Logic', () => {
       // const game = new Game();
       // game.start();
       // const originalY = game.currentPiece.position.y;
-      // 
+      //
       // // 落下間隔時間を経過させる
       // jest.advanceTimersByTime(game.dropInterval);
       // game.update();
-      // 
+      //
       // expect(game.currentPiece.position.y).toBe(originalY + 1);
       expect(true).toBe(true); // プレースホルダー
     });
@@ -345,15 +344,15 @@ describe('Game Core Logic', () => {
       // const game = new Game();
       // game.start();
       // game.pause();
-      // 
+      //
       // const originalState = {
       //   pieceY: game.currentPiece.position.y,
       //   score: game.score
       // };
-      // 
+      //
       // jest.advanceTimersByTime(game.dropInterval * 2);
       // game.update();
-      // 
+      //
       // expect(game.currentPiece.position.y).toBe(originalState.pieceY);
       // expect(game.score).toBe(originalState.score);
       expect(true).toBe(true); // プレースホルダー
@@ -363,12 +362,12 @@ describe('Game Core Logic', () => {
       // const game = new Game();
       // game.start();
       // game.triggerGameOver();
-      // 
+      //
       // const originalState = JSON.parse(JSON.stringify(game.getState()));
-      // 
+      //
       // jest.advanceTimersByTime(game.dropInterval);
       // game.update();
-      // 
+      //
       // expect(game.getState()).toEqual(originalState);
       expect(true).toBe(true); // プレースホルダー
     });
@@ -379,7 +378,7 @@ describe('Game Core Logic', () => {
       // const game = new Game();
       // game.start();
       // const originalX = game.currentPiece.position.x;
-      // 
+      //
       // game.handleInput('ArrowLeft');
       // expect(game.currentPiece.position.x).toBe(originalX - 1);
       expect(true).toBe(true); // プレースホルダー
@@ -388,11 +387,11 @@ describe('Game Core Logic', () => {
     test('入力シーケンスが正しく処理される', () => {
       // const game = new Game();
       // game.start();
-      // 
+      //
       // INPUT_SEQUENCES.BASIC_MOVEMENT.forEach(input => {
       //   game.handleInput(input);
       // });
-      // 
+      //
       // // 期待される最終位置を検証
       // expect(game.currentPiece.position.x).toBe(4); // 左右移動がキャンセル
       // expect(game.currentPiece.position.y).toBeGreaterThan(0); // 下に移動
@@ -403,7 +402,7 @@ describe('Game Core Logic', () => {
       // const game = new Game();
       // game.start();
       // const originalState = game.currentPiece.position;
-      // 
+      //
       // game.handleInput('InvalidKey');
       // expect(game.currentPiece.position).toEqual(originalState);
       expect(true).toBe(true); // プレースホルダー
@@ -422,11 +421,11 @@ describe('Game Core Logic', () => {
     test('ゲーム統計が正しく記録される', () => {
       // const game = new Game();
       // game.start();
-      // 
+      //
       // // いくつかの操作を実行
       // game.clearLines(4); // テトリス
       // game.clearLines(1); // シングル
-      // 
+      //
       // const stats = game.getStatistics();
       // expect(stats.tetrisCount).toBe(1);
       // expect(stats.singleLineCount).toBe(1);
@@ -437,9 +436,9 @@ describe('Game Core Logic', () => {
     test('プレイ時間が記録される', () => {
       // const game = new Game();
       // game.start();
-      // 
+      //
       // jest.advanceTimersByTime(60000); // 1分
-      // 
+      //
       // const stats = game.getStatistics();
       // expect(stats.playTime).toBeGreaterThanOrEqual(60000);
       expect(true).toBe(true); // プレースホルダー
@@ -449,7 +448,7 @@ describe('Game Core Logic', () => {
       // const game = new Game();
       // game.start();
       // game.score = 5000;
-      // 
+      //
       // game.saveHighScore();
       // expect(game.getHighScore()).toBe(5000);
       expect(true).toBe(true); // プレースホルダー
@@ -467,10 +466,10 @@ describe('Game Core Logic', () => {
     test('破損したゲーム状態の復旧', () => {
       // const game = new Game();
       // game.start();
-      // 
+      //
       // // 状態を破損させる
       // game.currentPiece = null;
-      // 
+      //
       // // 復旧を試みる
       // game.validateAndRepairState();
       // expect(game.currentPiece).toBeDefined();
@@ -482,13 +481,13 @@ describe('Game Core Logic', () => {
     test('ゲーム更新が効率的に実行される', () => {
       // const game = new Game();
       // game.start();
-      // 
+      //
       // const startTime = performance.now();
-      // 
+      //
       // for (let i = 0; i < 100; i++) {
       //   game.update();
       // }
-      // 
+      //
       // const endTime = performance.now();
       // expect(endTime - startTime).toBeLessThan(100); // 100ms以下
       expect(true).toBe(true); // プレースホルダー
@@ -497,13 +496,13 @@ describe('Game Core Logic', () => {
     test('大量の入力処理が効率的', () => {
       // const game = new Game();
       // game.start();
-      // 
+      //
       // const startTime = performance.now();
-      // 
+      //
       // for (let i = 0; i < 1000; i++) {
       //   game.handleInput('ArrowDown');
       // }
-      // 
+      //
       // const endTime = performance.now();
       // expect(endTime - startTime).toBeLessThan(50); // 50ms以下
       expect(true).toBe(true); // プレースホルダー

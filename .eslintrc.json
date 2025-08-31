@@ -11,12 +11,20 @@
     "sourceType": "module"
   },
   "rules": {
-    "no-unused-vars": "error",
+    "no-unused-vars": ["error", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
     "no-console": "warn",
     "prefer-const": "error",
     "no-var": "error",
     "eqeqeq": "error",
     "no-implicit-globals": "error",
     "no-shadow": "warn"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["tests/**/*.js"],
+      "rules": {
+        "no-unused-vars": "warn"
+      }
+    }
+  ]
 }
