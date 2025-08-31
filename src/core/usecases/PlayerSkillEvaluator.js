@@ -144,9 +144,10 @@ export default class PlayerSkillEvaluator {
     if (!specialMoves || specialMoves.length === 0) return 0;
 
     const tspinMoves = specialMoves.filter(move => move.type === 'tspin');
-    const usageRate = tspinMoves.length / specialMoves.length;
+    const totalCount = specialMoves.reduce((sum, move) => sum + (move.count || 1), 0);
+    const tspinCount = tspinMoves.reduce((sum, move) => sum + (move.count || 1), 0);
 
-    return Math.min(usageRate, 1.0);
+    return totalCount > 0 ? Math.min(tspinCount / totalCount, 1.0) : 0;
   }
 
   /**
@@ -158,10 +159,11 @@ export default class PlayerSkillEvaluator {
   calculatePerfectClearRate(specialMoves) {
     if (!specialMoves || specialMoves.length === 0) return 0;
 
-    const perfectClearMoves = specialMoves.filter(move => move.type === 'perfectclear');
-    const rate = perfectClearMoves.length / Math.max(specialMoves.length, 1);
+    const perfectClearMoves = specialMoves.filter(move => move.type === 'perfectClear');
+    const totalCount = specialMoves.reduce((sum, move) => sum + (move.count || 1), 0);
+    const perfectClearCount = perfectClearMoves.reduce((sum, move) => sum + (move.count || 1), 0);
 
-    return Math.min(rate, 1.0);
+    return totalCount > 0 ? Math.min(perfectClearCount / totalCount, 1.0) : 0;
   }
 
   /**

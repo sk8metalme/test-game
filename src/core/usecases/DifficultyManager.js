@@ -63,7 +63,7 @@ export default class DifficultyManager {
    */
   initialize() {
     // デフォルト難易度の設定
-    this.currentDifficulty = this.presets.loadPreset('casual');
+    this.currentDifficulty = this.presets.loadPreset('Beginner');
 
     // 適応的難易度の開始
     if (this.config.enableAdaptiveDifficulty) {
@@ -119,6 +119,17 @@ export default class DifficultyManager {
     try {
       const evaluation = this.playerSkill.evaluateSkill(gameData);
 
+      // 履歴の記録
+      if (this.config.enableHistory) {
+        this.history.recordChange({
+          changeType: 'skill_evaluation',
+          oldSettings: { ...this.currentDifficulty },
+          newSettings: { ...this.currentDifficulty },
+          skillDifference: evaluation.skillLevel - (this.playerSkill.getCurrentSkillLevel() || 0.5),
+          reason: 'スキル評価実行',
+        });
+      }
+
       // 難易度調整の実行
       if (this.config.enableAdaptiveDifficulty) {
         this.adjustDifficulty(evaluation.skillLevel);
@@ -160,7 +171,7 @@ export default class DifficultyManager {
     // 履歴の記録
     if (this.config.enableHistory) {
       this.history.recordChange({
-        timestamp: Date.now(),
+        changeType: 'skill_evaluation',
         oldSettings,
         newSettings,
         skillDifference,
@@ -190,7 +201,7 @@ export default class DifficultyManager {
     // 履歴の記録
     if (this.config.enableHistory) {
       this.history.recordChange({
-        timestamp: Date.now(),
+        changeType: 'manual_change',
         oldSettings,
         newSettings: this.currentDifficulty,
         reason: '手動設定変更',
@@ -275,7 +286,7 @@ export default class DifficultyManager {
     // 履歴の記録
     if (this.config.enableHistory) {
       this.history.recordChange({
-        timestamp: Date.now(),
+        changeType: 'adaptive_adjustment',
         oldSettings,
         newSettings,
         reason: `適応的調整: ${reason}`,
@@ -356,7 +367,7 @@ export default class DifficultyManager {
     const newSettings = { ...this.currentDifficulty };
 
     // 現在の設定を基準値に近づける
-    const baseDifficulty = this.presets.loadPreset('casual');
+    const baseDifficulty = this.presets.loadPreset('Beginner');
 
     if (newSettings.dropSpeed && baseDifficulty.dropSpeed) {
       const difference = baseDifficulty.dropSpeed - newSettings.dropSpeed;
@@ -380,6 +391,16 @@ export default class DifficultyManager {
     try {
       const preset = this.presets.loadPreset(presetName);
       this.applyDifficultySettings(preset);
+
+      // 履歴の記録
+      if (this.config.enableHistory) {
+        this.history.recordChange({
+          changeType: 'preset_change',
+          oldSettings: { ...this.currentDifficulty },
+          newSettings: preset,
+          reason: `プリセット変更: ${presetName}`,
+        });
+      }
 
       this.emit('presetChanged', { presetName, settings: preset });
       return preset;
