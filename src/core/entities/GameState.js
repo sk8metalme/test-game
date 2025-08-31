@@ -1,21 +1,21 @@
 /**
  * @file GameState.js
  * @description ゲーム状態管理エンティティ
- * 
+ *
  * 責任:
  * - ゲーム状態の管理（MENU/PLAYING/PAUSED/GAME_OVER）
  * - スコア計算とレベル進行
  * - 統計情報の追跡
  * - 時間管理
  * - イベント通知
- * 
+ *
  * アーキテクチャ: エンティティ層（オニオンアーキテクチャ）
  * テスト: tests/unit/entities/GameState.test.js
  */
 
 /**
  * ゲーム状態管理クラス
- * 
+ *
  * @class GameState
  * @description テトリスゲームの状態管理を担当するエンティティ
  */
@@ -33,10 +33,10 @@ export class GameState {
    * @readonly
    */
   static VALID_TRANSITIONS = {
-    'MENU': ['PLAYING'],
-    'PLAYING': ['PAUSED', 'GAME_OVER'],
-    'PAUSED': ['PLAYING'],
-    'GAME_OVER': ['MENU']
+    MENU: ['PLAYING'],
+    PLAYING: ['PAUSED', 'GAME_OVER'],
+    PAUSED: ['PLAYING'],
+    GAME_OVER: ['MENU'],
   };
 
   /**
@@ -55,7 +55,7 @@ export class GameState {
     T_SPIN_DOUBLE: 1200,
     T_SPIN_TRIPLE: 1600,
     COMBO_BASE: 50,
-    PERFECT_CLEAR: 1000
+    PERFECT_CLEAR: 1000,
   };
 
   /**
@@ -66,12 +66,12 @@ export class GameState {
   static LEVEL_CONFIG = {
     LINES_PER_LEVEL: 10,
     MAX_LEVEL: 99,
-    MIN_LEVEL: 1
+    MIN_LEVEL: 1,
   };
 
   /**
    * GameState インスタンスを作成
-   * 
+   *
    * @param {Object} [initialSettings={}] - 初期設定
    * @param {number} [initialSettings.level=1] - 初期レベル
    * @param {number} [initialSettings.score=0] - 初期スコア
@@ -89,6 +89,11 @@ export class GameState {
     this.combo = 0;
     this.isBackToBack = false;
 
+    // ゲーム要素
+    this.board = null;
+    this.currentPiece = null;
+    this.nextPiece = null;
+
     // タイマー管理
     this._timer = null;
     this._timerStartTime = null;
@@ -103,19 +108,25 @@ export class GameState {
       highScore: 0,
       bestLevel: 1,
       pieceUsage: {
-        I: 0, O: 0, T: 0, S: 0, Z: 0, J: 0, L: 0
+        I: 0,
+        O: 0,
+        T: 0,
+        S: 0,
+        Z: 0,
+        J: 0,
+        L: 0,
       },
       actionCounts: {
         tSpin: 0,
         perfectClear: 0,
         tetris: 0,
-        combo: 0
+        combo: 0,
       },
       averages: {
         score: 0,
         lines: 0,
-        time: 0
-      }
+        time: 0,
+      },
     };
 
     // イベントシステム
@@ -131,7 +142,7 @@ export class GameState {
 
   /**
    * ゲーム状態を設定
-   * 
+   *
    * @param {string} newStatus - 新しい状態
    * @returns {boolean} 成功した場合true
    */
@@ -159,7 +170,7 @@ export class GameState {
     this.emit('statusChange', {
       type: 'statusChange',
       oldStatus,
-      newStatus
+      newStatus,
     });
 
     return true;
@@ -177,13 +188,18 @@ export class GameState {
     this.combo = 0;
     this.isBackToBack = false;
     this._pausedTime = 0;
-    
+
+    // ゲーム要素のリセット
+    this.board = null;
+    this.currentPiece = null;
+    this.nextPiece = null;
+
     this.stopTimer();
   }
 
   /**
    * 状態変更時の内部処理
-   * 
+   *
    * @private
    * @param {string} oldStatus - 前の状態
    * @param {string} newStatus - 新しい状態
@@ -208,12 +224,79 @@ export class GameState {
   }
 
   // =============================================================================
+  // ゲーム要素管理メソッド
+  // =============================================================================
+
+  /**
+   * ボードを設定
+   *
+   * @param {Board} board - ボードインスタンス
+   * @returns {boolean} 成功した場合true
+   */
+  setBoard(board) {
+    if (!board || typeof board.setCell !== 'function') {
+      return false;
+    }
+
+    this.board = board;
+
+    this.emit('boardSet', {
+      type: 'boardSet',
+      board,
+    });
+
+    return true;
+  }
+
+  /**
+   * 現在のピースを設定
+   *
+   * @param {Tetromino} piece - テトロミノインスタンス
+   * @returns {boolean} 成功した場合true
+   */
+  setCurrentPiece(piece) {
+    if (!piece || typeof piece.type !== 'string') {
+      return false;
+    }
+
+    this.currentPiece = piece;
+
+    this.emit('currentPieceSet', {
+      type: 'currentPieceSet',
+      piece,
+    });
+
+    return true;
+  }
+
+  /**
+   * 次のピースを設定
+   *
+   * @param {Tetromino} piece - テトロミノインスタンス
+   * @returns {boolean} 成功した場合true
+   */
+  setNextPiece(piece) {
+    if (!piece || typeof piece.type !== 'string') {
+      return false;
+    }
+
+    this.nextPiece = piece;
+
+    this.emit('nextPieceSet', {
+      type: 'nextPieceSet',
+      piece,
+    });
+
+    return true;
+  }
+
+  // =============================================================================
   // スコア管理メソッド
   // =============================================================================
 
   /**
    * スコアを更新（加算）
-   * 
+   *
    * @param {number} points - 追加するポイント
    * @returns {boolean} 成功した場合true
    */
@@ -228,7 +311,7 @@ export class GameState {
 
   /**
    * ライン削除スコアを追加
-   * 
+   *
    * @param {number} lineCount - 削除したライン数（1-4）
    * @returns {number} 追加されたスコア
    */
@@ -270,7 +353,7 @@ export class GameState {
       actionType,
       baseScore,
       levelMultiplier,
-      totalScore
+      totalScore,
     });
 
     return totalScore;
@@ -278,7 +361,7 @@ export class GameState {
 
   /**
    * ソフトドロップスコアを追加
-   * 
+   *
    * @param {number} dropDistance - ドロップした距離
    * @returns {number} 追加されたスコア
    */
@@ -292,7 +375,7 @@ export class GameState {
 
   /**
    * ハードドロップスコアを追加
-   * 
+   *
    * @param {number} dropDistance - ドロップした距離
    * @returns {number} 追加されたスコア
    */
@@ -306,7 +389,7 @@ export class GameState {
 
   /**
    * コンボスコアを追加
-   * 
+   *
    * @param {number} comboCount - コンボ数
    * @returns {number} 追加されたスコア
    */
@@ -321,7 +404,7 @@ export class GameState {
 
   /**
    * Tスピンスコアを追加
-   * 
+   *
    * @param {number} lineCount - 削除したライン数
    * @param {boolean} isTSpin - Tスピンかどうか
    * @returns {number} 追加されたスコア
@@ -353,7 +436,7 @@ export class GameState {
       lineCount,
       baseScore,
       levelMultiplier: this.level,
-      totalScore
+      totalScore,
     });
 
     return totalScore;
@@ -361,7 +444,7 @@ export class GameState {
 
   /**
    * パーフェクトクリアボーナスを追加
-   * 
+   *
    * @param {number} lineCount - 削除したライン数
    * @returns {number} 追加されたスコア
    */
@@ -375,7 +458,7 @@ export class GameState {
     this.emit('perfectClear', {
       type: 'perfectClear',
       lineCount,
-      bonus
+      bonus,
     });
 
     return bonus;
@@ -383,7 +466,7 @@ export class GameState {
 
   /**
    * コンボを更新
-   * 
+   *
    * @private
    * @param {number} lineCount - 削除したライン数
    */
@@ -404,15 +487,17 @@ export class GameState {
 
   /**
    * レベルを設定
-   * 
+   *
    * @param {number} newLevel - 新しいレベル
    * @returns {boolean} 成功した場合true
    */
   setLevel(newLevel) {
     if (!this._validateNumber(newLevel)) return false;
 
-    if (newLevel < GameState.LEVEL_CONFIG.MIN_LEVEL || 
-        newLevel > GameState.LEVEL_CONFIG.MAX_LEVEL) {
+    if (
+      newLevel < GameState.LEVEL_CONFIG.MIN_LEVEL ||
+      newLevel > GameState.LEVEL_CONFIG.MAX_LEVEL
+    ) {
       return false;
     }
 
@@ -422,7 +507,7 @@ export class GameState {
 
   /**
    * ライン数を更新してレベルを自動調整
-   * 
+   *
    * @param {number} lineCount - 追加するライン数
    */
   updateLines(lineCount) {
@@ -443,14 +528,14 @@ export class GameState {
         type: 'levelUp',
         oldLevel,
         newLevel,
-        totalLines: this.lines
+        totalLines: this.lines,
       });
     }
   }
 
   /**
    * 現在のレベルに基づく落下間隔を取得
-   * 
+   *
    * @returns {number} 落下間隔（ミリ秒）
    */
   getDropInterval() {
@@ -460,7 +545,7 @@ export class GameState {
       1, // 最低1フレーム
       Math.floor(48 - (this.level - 1) * 3)
     );
-    
+
     return Math.max(16.67, baseFrames * 16.67); // 最低1フレーム間隔
   }
 
@@ -470,7 +555,7 @@ export class GameState {
 
   /**
    * ゲーム時間を更新（手動）
-   * 
+   *
    * @param {number} deltaTime - 追加する時間（ミリ秒）
    */
   updateGameTime(deltaTime) {
@@ -509,7 +594,7 @@ export class GameState {
 
   /**
    * タイマーを一時停止
-   * 
+   *
    * @private
    */
   _pauseTimer() {
@@ -520,7 +605,7 @@ export class GameState {
 
   /**
    * タイマーを再開
-   * 
+   *
    * @private
    */
   _resumeTimer() {
@@ -532,7 +617,7 @@ export class GameState {
 
   /**
    * タイマーが動作中かどうかを確認
-   * 
+   *
    * @returns {boolean} 動作中の場合true
    */
   isTimerRunning() {
@@ -541,7 +626,7 @@ export class GameState {
 
   /**
    * フォーマットされた時間文字列を取得
-   * 
+   *
    * @returns {string} MM:SS または H:MM:SS 形式の時間文字列
    */
   getFormattedTime() {
@@ -563,7 +648,7 @@ export class GameState {
 
   /**
    * 統計情報を更新
-   * 
+   *
    * @param {Object} stats - 統計データ
    * @param {number} [stats.gamesPlayed] - プレイ回数
    * @param {number} [stats.score] - スコア
@@ -603,7 +688,7 @@ export class GameState {
 
   /**
    * ピース使用回数をインクリメント
-   * 
+   *
    * @param {string} pieceType - ピースタイプ（I, O, T, S, Z, J, L）
    */
   incrementPieceUsage(pieceType) {
@@ -614,7 +699,7 @@ export class GameState {
 
   /**
    * アクション回数をインクリメント
-   * 
+   *
    * @param {string} actionType - アクションタイプ
    */
   incrementActionCount(actionType) {
@@ -625,37 +710,40 @@ export class GameState {
 
   /**
    * 平均スコアを取得
-   * 
+   *
    * @returns {number} 平均スコア
    */
   getAverageScore() {
-    return this.statistics.totalGames > 0 ? 
-      Math.round(this.statistics.totalScore / this.statistics.totalGames) : 0;
+    return this.statistics.totalGames > 0
+      ? Math.round(this.statistics.totalScore / this.statistics.totalGames)
+      : 0;
   }
 
   /**
    * 平均ライン数を取得
-   * 
+   *
    * @returns {number} 平均ライン数
    */
   getAverageLines() {
-    return this.statistics.totalGames > 0 ? 
-      Math.round(this.statistics.totalLines / this.statistics.totalGames) : 0;
+    return this.statistics.totalGames > 0
+      ? Math.round(this.statistics.totalLines / this.statistics.totalGames)
+      : 0;
   }
 
   /**
    * 平均プレイ時間を取得
-   * 
+   *
    * @returns {number} 平均プレイ時間（ミリ秒）
    */
   getAverageTime() {
-    return this.statistics.totalGames > 0 ? 
-      Math.round(this.statistics.totalTime / this.statistics.totalGames) : 0;
+    return this.statistics.totalGames > 0
+      ? Math.round(this.statistics.totalTime / this.statistics.totalGames)
+      : 0;
   }
 
   /**
    * 平均値を更新
-   * 
+   *
    * @private
    */
   _updateAverages() {
@@ -666,7 +754,7 @@ export class GameState {
 
   /**
    * ゲーム終了時の統計記録
-   * 
+   *
    * @private
    */
   _recordGameEnd() {
@@ -674,7 +762,7 @@ export class GameState {
       gamesPlayed: 1,
       score: this.score,
       lines: this.lines,
-      gameTime: this.gameTime
+      gameTime: this.gameTime,
     });
 
     this.emit('gameEnd', {
@@ -682,7 +770,7 @@ export class GameState {
       finalScore: this.score,
       finalLevel: this.level,
       finalLines: this.lines,
-      finalTime: this.gameTime
+      finalTime: this.gameTime,
     });
   }
 
@@ -692,7 +780,7 @@ export class GameState {
 
   /**
    * イベントリスナーを追加
-   * 
+   *
    * @param {string} eventType - イベントタイプ
    * @param {Function} listener - リスナー関数
    */
@@ -708,7 +796,7 @@ export class GameState {
 
   /**
    * イベントリスナーを削除
-   * 
+   *
    * @param {string} eventType - イベントタイプ
    * @param {Function} listener - リスナー関数
    */
@@ -723,7 +811,7 @@ export class GameState {
 
   /**
    * イベントを発行
-   * 
+   *
    * @param {string} eventType - イベントタイプ
    * @param {Object} eventData - イベントデータ
    */
@@ -747,7 +835,7 @@ export class GameState {
 
   /**
    * ゲーム状態をシリアライズ
-   * 
+   *
    * @returns {Object} シリアライズされた状態
    */
   serialize() {
@@ -757,13 +845,13 @@ export class GameState {
       level: this.level,
       lines: this.lines,
       gameTime: this.gameTime,
-      statistics: JSON.parse(JSON.stringify(this.statistics))
+      statistics: JSON.parse(JSON.stringify(this.statistics)),
     };
   }
 
   /**
    * シリアライズされた状態から復元
-   * 
+   *
    * @param {Object} data - 復元するデータ
    * @returns {boolean} 成功した場合true
    */
@@ -771,8 +859,7 @@ export class GameState {
     if (typeof data !== 'object' || data === null) return false;
 
     // バリデーション付きで復元
-    const validStatus = GameState.VALID_STATUSES.includes(data.status) ? 
-      data.status : 'MENU';
+    const validStatus = GameState.VALID_STATUSES.includes(data.status) ? data.status : 'MENU';
     const validScore = this._validateNumber(data.score, 0, 0);
     const validLevel = this._validateNumber(data.level, 1, 1, 99);
     const validLines = this._validateNumber(data.lines, 0, 0);
@@ -798,7 +885,7 @@ export class GameState {
 
   /**
    * 状態を検証して修復
-   * 
+   *
    * @returns {boolean} 修復が必要だった場合true
    */
   validateAndRecover() {
@@ -810,8 +897,7 @@ export class GameState {
       recovered = true;
     }
 
-    if (!this._validateNumber(this.level) || 
-        this.level < 1 || this.level > 99) {
+    if (!this._validateNumber(this.level) || this.level < 1 || this.level > 99) {
       this.level = 1;
       recovered = true;
     }
@@ -848,7 +934,7 @@ export class GameState {
 
   /**
    * 数値の妥当性を検証
-   * 
+   *
    * @private
    * @param {any} value - 検証する値
    * @param {number} [defaultValue=0] - デフォルト値
@@ -857,9 +943,7 @@ export class GameState {
    * @returns {number|boolean} 有効な数値または妥当性（boolean）
    */
   _validateNumber(value, defaultValue = null, min = null, max = null) {
-    const isValid = typeof value === 'number' && 
-                   !isNaN(value) && 
-                   isFinite(value);
+    const isValid = typeof value === 'number' && !isNaN(value) && isFinite(value);
 
     if (defaultValue !== null) {
       if (!isValid) return defaultValue;
@@ -882,7 +966,7 @@ export class GameState {
     this.gameTime = 0;
     this.combo = 0;
     this.isBackToBack = false;
-    
+
     // 統計情報をリセット（totalGamesは維持）
     const currentTotalGames = this.statistics.totalGames;
     this.statistics = {
@@ -893,15 +977,21 @@ export class GameState {
       highScore: this.statistics.highScore || 0,
       bestLevel: this.statistics.bestLevel || 1,
       pieceUsage: {
-        I: 0, O: 0, T: 0, S: 0, Z: 0, J: 0, L: 0
+        I: 0,
+        O: 0,
+        T: 0,
+        S: 0,
+        Z: 0,
+        J: 0,
+        L: 0,
       },
       actionCounts: {
         move: 0,
         rotate: 0,
         hardDrop: 0,
         softDrop: 0,
-        hold: 0
-      }
+        hold: 0,
+      },
     };
   }
 

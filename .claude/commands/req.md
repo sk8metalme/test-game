@@ -4,26 +4,25 @@ description: ワークフローループ実行（計画→実装→レビュー�
 ---
 
 ## 実行内容
-
 このコマンドが実行されたら、以下のループを全ステップ完了まで自動的に繰り返します。
 
 ### ワークフローループ
 ```
-3. @manager-pj → PJ計画 
-4. @manager-agent,@analyze-pj,@design-expert,@developer → PJ内部レビュー/改善
-5. @design-expert → 詳細設計
-6. @manager-agent,@analyze-pj,@design-expert,@developer → 詳細設計内部レビュー/改善
-7. @design-test → テスト設計
-8. @design-test,@developer → テスト設計内部レビュー/改善
-9. @developer,@test-developer → TDDでの開発
-   9-1. @test-developer → テスト開発
-   9-2. @developer → 開発
-   9-3. @test-developer → テスト実施
-   9-4. @review-cq → コードレビュー
-10. @manager-doc → ドキュメント最新化
-11. @manager-agent,@manager-pj,@design-expert → 全体の内部レビュー
-12. @manager-agent → 各種エージェントへの改善指示
-13. @developer → PR作成
+1. @manager-pj → PJ計画 
+2. @manager-agent,@analyze-pj,@design-expert,@developer → PJ内部レビュー/改善
+3. @design-expert → 詳細設計
+4. @manager-agent,@analyze-pj,@design-expert,@developer → 詳細設計内部レビュー/改善
+5. @design-test → テスト設計
+6. @design-test,@developer → テスト設計内部レビュー/改善
+7. @developer,@test-developer → TDDでの開発
+   7-1. @test-developer → テスト開発
+   7-2. @developer → 開発
+   7-3. @test-developer → テスト実施
+   7-4. @review-cq → コードレビュー
+8. @manager-doc → ドキュメント最新化
+9. @manager-agent,@manager-pj,@design-expert → 全体の内部レビュー
+10. @manager-agent → 各種エージェントへの改善指示
+11. @developer → PR作成
 ```
 
 ### 重要な動作仕様
