@@ -242,6 +242,16 @@ export default class DifficultyManager {
       // 推奨事項に基づく調整
       if (analysis.recommendation) {
         this.applyAdaptiveChanges(analysis.recommendation);
+      } else {
+        // 推奨事項がない場合でも、分析結果を履歴に記録
+        if (this.config.enableHistory) {
+          this.history.recordChange({
+            changeType: 'performance_analysis',
+            oldSettings: { ...this.currentDifficulty },
+            newSettings: { ...this.currentDifficulty },
+            reason: 'パフォーマンス分析実行',
+          });
+        }
       }
 
       this.emit('adaptiveAdjustment', analysis);
