@@ -1,15 +1,15 @@
 /**
  * GameLogic.js - コアゲームロジック実装
- * 
+ *
  * オニオンアーキテクチャ: Application Layer (Use Cases)
- * 
+ *
  * 責任:
  * - ゲームの主要な業務ロジック管理
  * - ピース移動・回転・固定の統制
  * - ライン削除ロジックの実行
  * - ゲーム状態遷移の管理
  * - スコア計算の連携
- * 
+ *
  * @tdd-development-expert との協力実装
  */
 
@@ -23,26 +23,26 @@ export default class GameLogic {
   constructor(board, gameState) {
     this.board = board;
     this.gameState = gameState;
-    
+
     // 現在のピース
     this.currentPiece = null;
-    
+
     // ネクストピースキュー（3つ先まで表示）
     this.nextPieces = [];
-    
+
     // ホールドピース
-    this.holdPiece = null;
+    this.heldPiece = null;
     this.canHold = true;
-    
+
     // 7-bagシステム
     this.pieceBag = [];
     this.bagIndex = 0;
-    
+
     // ゲームタイマー
     this.dropTimer = 0;
     this.lockTimer = 0;
     this.lockDelay = 500; // 500ms
-    
+
     // 初期化
     this._initializePieceBag();
     this._initializeNextPieces();
@@ -57,16 +57,16 @@ export default class GameLogic {
       this.gameState.setStatus('PLAYING');
       this.currentPiece = this._spawnPiece();
       this.canHold = true;
-      
+
       return {
         success: true,
-        piece: this.currentPiece
+        piece: this.currentPiece,
       };
     } catch (error) {
       return {
         success: false,
         reason: 'spawn_failed',
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -79,13 +79,13 @@ export default class GameLogic {
     if (this.gameState.status !== 'PLAYING') {
       return {
         success: false,
-        reason: 'not_playing'
+        reason: 'not_playing',
       };
     }
 
     this.gameState.setStatus('PAUSED');
     return {
-      success: true
+      success: true,
     };
   }
 
@@ -97,13 +97,13 @@ export default class GameLogic {
     if (this.gameState.status !== 'PAUSED') {
       return {
         success: false,
-        reason: 'not_paused'
+        reason: 'not_paused',
       };
     }
 
     this.gameState.setStatus('PLAYING');
     return {
-      success: true
+      success: true,
     };
   }
 
@@ -115,14 +115,14 @@ export default class GameLogic {
     this.board.clear();
     this.gameState.resetGame();
     this.currentPiece = null;
-    this.holdPiece = null;
+    this.heldPiece = null;
     this.canHold = true;
-    
+
     this._initializePieceBag();
     this._initializeNextPieces();
-    
+
     return {
-      success: true
+      success: true,
     };
   }
 
@@ -147,7 +147,7 @@ export default class GameLogic {
    * @returns {Tetromino|null}
    */
   getHoldPiece() {
-    return this.holdPiece;
+    return this.heldPiece;
   }
 
   /**
@@ -159,21 +159,21 @@ export default class GameLogic {
       return this._getOperationError();
     }
 
-    const originalX = this.currentPiece.x;
+    const originalX = this.currentPiece.position.x;
     this.currentPiece.moveLeft();
 
     if (this._isColliding()) {
-      this.currentPiece.x = originalX; // 元に戻す
+      this.currentPiece.position.x = originalX; // 元に戻す
       return {
         success: false,
-        reason: 'collision'
+        reason: 'collision',
       };
     }
 
     this._resetLockTimer();
     return {
       success: true,
-      newPosition: { x: this.currentPiece.x, y: this.currentPiece.y }
+      newPosition: { x: this.currentPiece.position.x, y: this.currentPiece.position.y },
     };
   }
 
@@ -186,21 +186,21 @@ export default class GameLogic {
       return this._getOperationError();
     }
 
-    const originalX = this.currentPiece.x;
+    const originalX = this.currentPiece.position.x;
     this.currentPiece.moveRight();
 
     if (this._isColliding()) {
-      this.currentPiece.x = originalX; // 元に戻す
+      this.currentPiece.position.x = originalX; // 元に戻す
       return {
         success: false,
-        reason: 'collision'
+        reason: 'collision',
       };
     }
 
     this._resetLockTimer();
     return {
       success: true,
-      newPosition: { x: this.currentPiece.x, y: this.currentPiece.y }
+      newPosition: { x: this.currentPiece.position.x, y: this.currentPiece.position.y },
     };
   }
 
@@ -213,27 +213,27 @@ export default class GameLogic {
       return this._getOperationError();
     }
 
-    const originalY = this.currentPiece.y;
+    const originalY = this.currentPiece.position.y;
     this.currentPiece.moveDown();
 
     if (this._isColliding()) {
-      this.currentPiece.y = originalY; // 元に戻す
-      
+      this.currentPiece.position.y = originalY; // 元に戻す
+
       // 底に着いた場合はロックタイマー開始
       this._startLockTimer();
       return {
         success: false,
         reason: 'collision',
-        landed: true
+        landed: true,
       };
     }
 
     // ソフトドロップスコア
     this.gameState.addSoftDropScore(1);
-    
+
     return {
       success: true,
-      newPosition: { x: this.currentPiece.x, y: this.currentPiece.y }
+      newPosition: { x: this.currentPiece.position.x, y: this.currentPiece.position.y },
     };
   }
 
@@ -246,24 +246,24 @@ export default class GameLogic {
       return this._getOperationError();
     }
 
-    const originalRotation = this.currentPiece.rotation;
-    const originalX = this.currentPiece.x;
-    const originalY = this.currentPiece.y;
+    const originalRotation = this.currentPiece.rotationState;
+    const originalX = this.currentPiece.position.x;
+    const originalY = this.currentPiece.position.y;
 
     this.currentPiece.rotateClockwise();
 
     // 衝突チェック（Wall Kick含む）
-    const kickResult = this._tryWallKick(originalRotation, this.currentPiece.rotation);
-    
+    const kickResult = this._tryWallKick(originalRotation, this.currentPiece.rotationState);
+
     if (!kickResult.success) {
       // 回転失敗：元に戻す
-      this.currentPiece.rotation = originalRotation;
-      this.currentPiece.x = originalX;
-      this.currentPiece.y = originalY;
-      
+      this.currentPiece.rotationState = originalRotation;
+      this.currentPiece.position.x = originalX;
+      this.currentPiece.position.y = originalY;
+
       return {
         success: false,
-        reason: 'collision'
+        reason: 'collision',
       };
     }
 
@@ -271,8 +271,8 @@ export default class GameLogic {
     return {
       success: true,
       wallKick: kickResult.wallKick,
-      newPosition: { x: this.currentPiece.x, y: this.currentPiece.y },
-      newRotation: this.currentPiece.rotation
+      newPosition: { x: this.currentPiece.position.x, y: this.currentPiece.position.y },
+      newRotation: this.currentPiece.rotationState,
     };
   }
 
@@ -285,24 +285,24 @@ export default class GameLogic {
       return this._getOperationError();
     }
 
-    const originalRotation = this.currentPiece.rotation;
-    const originalX = this.currentPiece.x;
-    const originalY = this.currentPiece.y;
+    const originalRotation = this.currentPiece.rotationState;
+    const originalX = this.currentPiece.position.x;
+    const originalY = this.currentPiece.position.y;
 
     this.currentPiece.rotateCounterClockwise();
 
     // 衝突チェック（Wall Kick含む）
-    const kickResult = this._tryWallKick(originalRotation, this.currentPiece.rotation);
-    
+    const kickResult = this._tryWallKick(originalRotation, this.currentPiece.rotationState);
+
     if (!kickResult.success) {
       // 回転失敗：元に戻す
-      this.currentPiece.rotation = originalRotation;
-      this.currentPiece.x = originalX;
-      this.currentPiece.y = originalY;
-      
+      this.currentPiece.rotationState = originalRotation;
+      this.currentPiece.position.x = originalX;
+      this.currentPiece.position.y = originalY;
+
       return {
         success: false,
-        reason: 'collision'
+        reason: 'collision',
       };
     }
 
@@ -310,8 +310,8 @@ export default class GameLogic {
     return {
       success: true,
       wallKick: kickResult.wallKick,
-      newPosition: { x: this.currentPiece.x, y: this.currentPiece.y },
-      newRotation: this.currentPiece.rotation
+      newPosition: { x: this.currentPiece.position.x, y: this.currentPiece.position.y },
+      newRotation: this.currentPiece.rotationState,
     };
   }
 
@@ -332,7 +332,7 @@ export default class GameLogic {
       this.currentPiece.moveDown();
       distance++;
     }
-    
+
     // 最後の移動は衝突したので1つ戻す
     this.currentPiece.moveUp();
     distance--;
@@ -347,7 +347,7 @@ export default class GameLogic {
       success: true,
       distance: distance,
       pieceLocked: lockResult.success,
-      linesCleared: lockResult.linesCleared || 0
+      linesCleared: lockResult.linesCleared || 0,
     };
   }
 
@@ -363,31 +363,33 @@ export default class GameLogic {
     if (!this.canHold) {
       return {
         success: false,
-        reason: 'already_held_this_turn'
+        reason: 'already_held_this_turn',
       };
     }
 
     const currentType = this.currentPiece.type;
 
-    if (this.holdPiece === null) {
+    if (this.heldPiece === null) {
       // 初回ホールド
-      this.holdPiece = new Tetromino(currentType);
+      this.heldPiece = new Tetromino(currentType);
       this.currentPiece = this._spawnPiece();
     } else {
       // ホールドピースと交換
-      const holdType = this.holdPiece.type;
-      this.holdPiece = new Tetromino(currentType);
+      const holdType = this.heldPiece.type;
+      this.heldPiece = new Tetromino(currentType);
       this.currentPiece = new Tetromino(holdType);
-      this.currentPiece.x = Math.floor((this.board.width - this.currentPiece.getWidth()) / 2);
-      this.currentPiece.y = 0;
+      this.currentPiece.position.x = Math.floor(
+        (this.board.COLS - this.currentPiece.getWidth()) / 2
+      );
+      this.currentPiece.position.y = 0;
     }
 
     this.canHold = false;
 
     return {
       success: true,
-      holdPiece: this.holdPiece,
-      currentPiece: this.currentPiece
+      holdPiece: this.heldPiece,
+      currentPiece: this.currentPiece,
     };
   }
 
@@ -397,17 +399,17 @@ export default class GameLogic {
    */
   checkAndClearLines() {
     const clearResult = this.board.clearLines();
-    
+
     if (clearResult.linesCleared === 0) {
       return {
         linesCleared: 0,
-        lineTypes: []
+        lineTypes: [],
       };
     }
 
     // スコア計算
     const lineScore = this.gameState.addLineScore(clearResult.linesCleared);
-    
+
     // ライン数更新
     this.gameState.updateLines(clearResult.linesCleared);
 
@@ -418,7 +420,7 @@ export default class GameLogic {
       linesCleared: clearResult.linesCleared,
       lineTypes: lineTypes,
       score: lineScore,
-      totalLines: this.gameState.lines
+      totalLines: this.gameState.lines,
     };
   }
 
@@ -433,17 +435,17 @@ export default class GameLogic {
 
       return {
         success: true,
-        piece: this.currentPiece
+        piece: this.currentPiece,
       };
     } catch (error) {
       // ゲームオーバー
       this.gameState.setStatus('GAME_OVER');
       this.gameState.incrementTotalGames();
-      
+
       return {
         success: false,
         gameOver: true,
-        reason: 'spawn_collision'
+        reason: 'spawn_collision',
       };
     }
   }
@@ -465,17 +467,17 @@ export default class GameLogic {
     if (this.dropTimer >= dropInterval) {
       this.dropTimer = 0;
       const moveResult = this.movePieceDown();
-      
+
       if (!moveResult.success && moveResult.landed) {
         // ロックタイマー進行
         this.lockTimer += deltaTime;
-        
+
         if (this.lockTimer >= this.lockDelay) {
           const lockResult = this._lockPiece();
           return {
             updated: true,
             pieceLocked: true,
-            linesCleared: lockResult.linesCleared
+            linesCleared: lockResult.linesCleared,
           };
         }
       }
@@ -501,7 +503,8 @@ export default class GameLogic {
    */
   _initializeNextPieces() {
     this.nextPieces = [];
-    for (let i = 0; i < 5; i++) { // 5個先まで準備
+    for (let i = 0; i < 5; i++) {
+      // 5個先まで準備
       this.nextPieces.push(new Tetromino(this._getNextPieceType()));
     }
   }
@@ -515,7 +518,7 @@ export default class GameLogic {
     if (this.bagIndex >= this.pieceBag.length) {
       this._initializePieceBag();
     }
-    
+
     return this.pieceBag[this.bagIndex++];
   }
 
@@ -527,10 +530,10 @@ export default class GameLogic {
   _spawnPiece() {
     const piece = this.nextPieces.shift();
     this.nextPieces.push(new Tetromino(this._getNextPieceType()));
-    
+
     // スポーン位置設定
-    piece.x = Math.floor((this.board.width - piece.getWidth()) / 2);
-    piece.y = 0;
+    piece.position.x = Math.floor((this.board.COLS - piece.getWidth()) / 2);
+    piece.position.y = 0;
 
     // スポーン時の衝突チェック
     this.currentPiece = piece;
@@ -548,7 +551,7 @@ export default class GameLogic {
    */
   _isColliding() {
     if (!this.currentPiece) return false;
-    
+
     return this.board.isColliding(this.currentPiece);
   }
 
@@ -569,27 +572,27 @@ export default class GameLogic {
     const kickTable = this._getWallKickTable(this.currentPiece.type);
     const kicks = kickTable[fromRotation][toRotation] || [];
 
-    const originalX = this.currentPiece.x;
-    const originalY = this.currentPiece.y;
+    const originalX = this.currentPiece.position.x;
+    const originalY = this.currentPiece.position.y;
 
     // 各キックオフセットを試行
     for (let i = 0; i < kicks.length; i++) {
       const [dx, dy] = kicks[i];
-      this.currentPiece.x = originalX + dx;
-      this.currentPiece.y = originalY + dy;
+      this.currentPiece.position.x = originalX + dx;
+      this.currentPiece.position.y = originalY + dy;
 
       if (!this._isColliding()) {
         return {
           success: true,
-          wallKick: { offsetIndex: i, dx, dy }
+          wallKick: { offsetIndex: i, dx, dy },
         };
       }
     }
 
     // 全てのキックが失敗
-    this.currentPiece.x = originalX;
-    this.currentPiece.y = originalY;
-    
+    this.currentPiece.position.x = originalX;
+    this.currentPiece.position.y = originalY;
+
     return { success: false };
   }
 
@@ -604,41 +607,121 @@ export default class GameLogic {
       // I字ピース専用テーブル
       return {
         0: {
-          1: [[-2, 0], [1, 0], [-2, -1], [1, 2]],
-          3: [[-1, 0], [2, 0], [-1, 2], [2, -1]]
+          1: [
+            [-2, 0],
+            [1, 0],
+            [-2, -1],
+            [1, 2],
+          ],
+          3: [
+            [-1, 0],
+            [2, 0],
+            [-1, 2],
+            [2, -1],
+          ],
         },
         1: {
-          0: [[2, 0], [-1, 0], [2, 1], [-1, -2]],
-          2: [[-1, 0], [2, 0], [-1, 2], [2, -1]]
+          0: [
+            [2, 0],
+            [-1, 0],
+            [2, 1],
+            [-1, -2],
+          ],
+          2: [
+            [-1, 0],
+            [2, 0],
+            [-1, 2],
+            [2, -1],
+          ],
         },
         2: {
-          1: [[1, 0], [-2, 0], [1, -2], [-2, 1]],
-          3: [[2, 0], [-1, 0], [2, 1], [-1, -2]]
+          1: [
+            [1, 0],
+            [-2, 0],
+            [1, -2],
+            [-2, 1],
+          ],
+          3: [
+            [2, 0],
+            [-1, 0],
+            [2, 1],
+            [-1, -2],
+          ],
         },
         3: {
-          0: [[1, 0], [-2, 0], [1, -2], [-2, 1]],
-          2: [[-2, 0], [1, 0], [-2, -1], [1, 2]]
-        }
+          0: [
+            [1, 0],
+            [-2, 0],
+            [1, -2],
+            [-2, 1],
+          ],
+          2: [
+            [-2, 0],
+            [1, 0],
+            [-2, -1],
+            [1, 2],
+          ],
+        },
       };
     } else {
       // その他のピース（共通テーブル）
       return {
         0: {
-          1: [[-1, 0], [-1, 1], [0, -2], [-1, -2]],
-          3: [[1, 0], [1, 1], [0, -2], [1, -2]]
+          1: [
+            [-1, 0],
+            [-1, 1],
+            [0, -2],
+            [-1, -2],
+          ],
+          3: [
+            [1, 0],
+            [1, 1],
+            [0, -2],
+            [1, -2],
+          ],
         },
         1: {
-          0: [[1, 0], [1, -1], [0, 2], [1, 2]],
-          2: [[1, 0], [1, -1], [0, 2], [1, 2]]
+          0: [
+            [1, 0],
+            [1, -1],
+            [0, 2],
+            [1, 2],
+          ],
+          2: [
+            [1, 0],
+            [1, -1],
+            [0, 2],
+            [1, 2],
+          ],
         },
         2: {
-          1: [[-1, 0], [-1, 1], [0, -2], [-1, -2]],
-          3: [[1, 0], [1, 1], [0, -2], [1, -2]]
+          1: [
+            [-1, 0],
+            [-1, 1],
+            [0, -2],
+            [-1, -2],
+          ],
+          3: [
+            [1, 0],
+            [1, 1],
+            [0, -2],
+            [1, -2],
+          ],
         },
         3: {
-          0: [[-1, 0], [-1, -1], [0, 2], [-1, 2]],
-          2: [[-1, 0], [-1, -1], [0, 2], [-1, 2]]
-        }
+          0: [
+            [-1, 0],
+            [-1, -1],
+            [0, 2],
+            [-1, 2],
+          ],
+          2: [
+            [-1, 0],
+            [-1, -1],
+            [0, 2],
+            [-1, 2],
+          ],
+        },
       };
     }
   }
@@ -650,21 +733,39 @@ export default class GameLogic {
    */
   _lockPiece() {
     // ボードにピースを配置
-    this.board.placePiece(this.currentPiece);
-    
+    const pieceShape = this.currentPiece.getOccupiedCells();
+    const offsetX = this.currentPiece.position.x;
+    const offsetY = this.currentPiece.position.y;
+    const pieceType =
+      this.currentPiece.type === 'I'
+        ? 1
+        : this.currentPiece.type === 'O'
+          ? 2
+          : this.currentPiece.type === 'T'
+            ? 3
+            : this.currentPiece.type === 'S'
+              ? 4
+              : this.currentPiece.type === 'Z'
+                ? 5
+                : this.currentPiece.type === 'J'
+                  ? 6
+                  : 7;
+
+    this.board.placePiece(pieceShape, offsetX, offsetY, pieceType);
+
     // ライン削除チェック
     const clearResult = this.checkAndClearLines();
-    
+
     // 新しいピースをスポーン
     const spawnResult = this.spawnNextPiece();
-    
+
     // ロックタイマーリセット
     this.lockTimer = 0;
-    
+
     return {
       success: true,
       linesCleared: clearResult.linesCleared,
-      gameOver: !spawnResult.success
+      gameOver: !spawnResult.success,
     };
   }
 
@@ -676,7 +777,7 @@ export default class GameLogic {
    */
   _getLineTypes(lines) {
     const types = [];
-    
+
     switch (lines) {
       case 1:
         types.push('single');
@@ -691,7 +792,7 @@ export default class GameLogic {
         types.push('tetris');
         break;
     }
-    
+
     return types;
   }
 

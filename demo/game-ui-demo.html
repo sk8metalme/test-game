@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameUI Demo - テトリスゲームUI確認</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .demo-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 2px solid #00ff00;
+        }
+        
+        .demo-title {
+            font-size: 2.5em;
+            margin: 0;
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        
+        .demo-subtitle {
+            font-size: 1.2em;
+            margin: 10px 0 0 0;
+            color: #cccccc;
+        }
+        
+        .demo-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .demo-button {
+            padding: 12px 24px;
+            font-size: 1.1em;
+            background: linear-gradient(45deg, #00ff00, #00cc00);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 0, 0.4);
+        }
+        
+        .demo-button:active {
+            transform: translateY(0);
+        }
+        
+        .demo-button.secondary {
+            background: linear-gradient(45deg, #666666, #888888);
+        }
+        
+        .demo-button.secondary:hover {
+            box-shadow: 0 5px 15px rgba(102, 102, 102, 0.4);
+        }
+        
+        .demo-button.danger {
+            background: linear-gradient(45deg, #ff4444, #cc0000);
+        }
+        
+        .demo-button.danger:hover {
+            box-shadow: 0 5px 15px rgba(255, 68, 68, 0.4);
+        }
+        
+        .demo-content {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            padding: 30px;
+            border: 2px solid #333333;
+            min-height: 600px;
+            position: relative;
+        }
+        
+        .demo-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #00ff00;
+            font-size: 0.9em;
+            max-width: 250px;
+        }
+        
+        .demo-info h3 {
+            margin: 0 0 10px 0;
+            color: #00ff00;
+            font-size: 1.1em;
+        }
+        
+        .demo-info p {
+            margin: 5px 0;
+            color: #cccccc;
+        }
+        
+        .demo-info .current-screen {
+            color: #00ff00;
+            font-weight: bold;
+        }
+        
+        .demo-info .screen-history {
+            color: #ffff00;
+            font-style: italic;
+        }
+        
+        .debug-info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ff4444;
+            font-size: 0.8em;
+            max-width: 300px;
+            max-height: 200px;
+            overflow-y: auto;
+            color: #ff4444;
+        }
+        
+        .debug-info h3 {
+            margin: 0 0 10px 0;
+            color: #ff4444;
+            font-size: 1em;
+        }
+        
+        .debug-info div {
+            margin: 2px 0;
+            font-family: monospace;
+        }
+        
+        /* GameUI固有のスタイル */
+        .menu-screen {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .menu-title {
+            font-size: 4em;
+            margin: 0 0 40px 0;
+            color: #00ff00;
+            text-shadow: 0 0 20px #00ff00;
+            font-weight: bold;
+            letter-spacing: 3px;
+        }
+        
+        .menu-items {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .menu-item {
+            padding: 20px;
+            font-size: 1.3em;
+            background: linear-gradient(45deg, #333333, #555555);
+            color: #ffffff;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .menu-item:hover {
+            background: linear-gradient(45deg, #00ff00, #00cc00);
+            color: #000000;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.6);
+        }
+        
+        .game-screen {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+            height: 100%;
+        }
+        
+        .game-header {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #00ff00;
+        }
+        
+        .game-score, .game-level, .game-lines {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #00ff00;
+        }
+        
+        .game-board {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+        }
+        
+        .game-board canvas {
+            border: 1px solid #333333;
+            background: #000000;
+        }
+        
+        .game-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .next-piece, .game-state {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #00ff00;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .next-piece {
+            color: #ffff00;
+        }
+        
+        .game-state {
+            color: #ff4444;
+        }
+        
+        .game-state.paused {
+            color: #ffff00;
+        }
+        
+        .game-state.game-over {
+            color: #ff4444;
+        }
+        
+        .settings-screen {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .settings-title {
+            text-align: center;
+            font-size: 2.5em;
+            margin: 0 0 30px 0;
+            color: #00ff00;
+        }
+        
+        .settings-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            border: 1px solid #333333;
+        }
+        
+        .setting-item label {
+            font-weight: bold;
+            color: #00ff00;
+            font-size: 1.1em;
+        }
+        
+        .setting-item select, .setting-item input[type="range"] {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #00ff00;
+            background: #333333;
+            color: #ffffff;
+        }
+        
+        .setting-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #00ff00;
+        }
+        
+        .back-button {
+            display: block;
+            margin: 30px auto 0;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            background: linear-gradient(45deg, #666666, #888888);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .back-button:hover {
+            background: linear-gradient(45deg, #888888, #aaaaaa);
+            transform: translateY(-2px);
+        }
+        
+        .high-scores-screen {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .high-scores-title {
+            text-align: center;
+            font-size: 2.5em;
+            margin: 0 0 30px 0;
+            color: #00ff00;
+        }
+        
+        .high-scores-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .score-item {
+            display: grid;
+            grid-template-columns: 60px 1fr 120px 100px 100px;
+            gap: 15px;
+            align-items: center;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            border: 1px solid #333333;
+        }
+        
+        .score-item .rank {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #ffff00;
+            text-align: center;
+        }
+        
+        .score-item .player {
+            font-weight: bold;
+            color: #00ff00;
+        }
+        
+        .score-item .score {
+            font-weight: bold;
+            color: #ffff00;
+            text-align: right;
+        }
+        
+        .score-item .level, .score-item .lines {
+            color: #cccccc;
+            text-align: center;
+        }
+        
+        .no-scores {
+            text-align: center;
+            font-size: 1.2em;
+            color: #666666;
+            font-style: italic;
+            padding: 40px;
+        }
+        
+        /* レスポンシブ対応 */
+        @media (max-width: 768px) {
+            .demo-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .game-screen {
+                grid-template-columns: 1fr;
+            }
+            
+            .game-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .score-item {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 10px;
+            }
+            
+            .demo-info, .debug-info {
+                position: static;
+                margin-bottom: 20px;
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1 class="demo-title">GameUI Demo</h1>
+            <p class="demo-subtitle">テトリスゲームUI基盤コンポーネント - 画面確認・動作テスト</p>
+        </div>
+        
+        <div class="demo-controls">
+            <button class="demo-button" onclick="showMenu()">メニュー画面</button>
+            <button class="demo-button" onclick="showGame()">ゲーム画面</button>
+            <button class="demo-button" onclick="showSettings()">設定画面</button>
+            <button class="demo-button" onclick="showHighScores()">高スコア画面</button>
+            <button class="demo-button secondary" onclick="goBack()">前の画面に戻る</button>
+            <button class="demo-button secondary" onclick="updateGameInfo()">ゲーム情報更新</button>
+            <button class="demo-button secondary" onclick="setGameState()">ゲーム状態変更</button>
+            <button class="demo-button danger" onclick="clearScreen()">画面クリア</button>
+        </div>
+        
+        <div class="demo-content" id="demo-content">
+            <div class="demo-info">
+                <h3>画面情報</h3>
+                <p>現在の画面: <span class="current-screen" id="current-screen">なし</span></p>
+                <p>画面履歴: <span class="screen-history" id="screen-history">なし</span></p>
+                <p>テーマ: <span id="current-theme">デフォルト</span></p>
+                <p>デバイス: <span id="device-type">デスクトップ</span></p>
+            </div>
+            
+            <div class="debug-info">
+                <h3>デバッグ情報</h3>
+                <div id="debug-info">初期化中...</div>
+            </div>
+            
+            <div style="text-align: center; padding: 100px;">
+                <h2 style="color: #00ff00; font-size: 2em;">GameUI Demo</h2>
+                <p style="color: #cccccc; font-size: 1.2em;">上記のボタンをクリックして各画面を確認してください</p>
+                <p style="color: #888888; font-size: 1em;">実装されたGameUIの全機能をテストできます</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import GameUI from '../src/presentation/ui/GameUI.js';
+        
+        let gameUI;
+        let demoContainer;
+        
+        // デバッグ用のログ関数
+        function debugLog(message, data = null) {
+            console.log(`[GameUI Demo] ${message}`, data);
+            // 画面上にもデバッグ情報を表示
+            const debugElement = document.getElementById('debug-info');
+            if (debugElement) {
+                const timestamp = new Date().toLocaleTimeString();
+                const logMessage = data ? `${timestamp}: ${message} - ${JSON.stringify(data)}` : `${timestamp}: ${message}`;
+                debugElement.innerHTML += `<div>${logMessage}</div>`;
+                // 最新の10件のみ表示
+                const logs = debugElement.innerHTML.split('<div>').slice(-10);
+                debugElement.innerHTML = logs.join('<div>');
+            }
+        }
+        
+        // デモ用のモックコンテナ
+        class MockContainer {
+            constructor() {
+                this.element = document.getElementById('demo-content');
+                this.innerHTML = '';
+                debugLog('MockContainer initialized');
+            }
+            
+            get innerHTML() {
+                return this.element.innerHTML;
+            }
+            
+            set innerHTML(value) {
+                this.element.innerHTML = value;
+                debugLog('innerHTML updated', value.substring(0, 100) + '...');
+            }
+            
+            querySelector(selector) {
+                const element = this.element.querySelector(selector);
+                debugLog(`querySelector(${selector})`, element);
+                return element;
+            }
+            
+            querySelectorAll(selector) {
+                const elements = this.element.querySelectorAll(selector);
+                debugLog(`querySelectorAll(${selector})`, elements.length);
+                return elements;
+            }
+            
+            addEventListener(type, listener) {
+                this.element.addEventListener(type, listener);
+                debugLog(`addEventListener(${type})`);
+            }
+            
+            removeEventListener(type, listener) {
+                this.element.removeEventListener(type, listener);
+                debugLog(`removeEventListener(${type})`);
+            }
+            
+            style = {};
+        }
+        
+        // 初期化
+        function initGameUI() {
+            try {
+                debugLog('Initializing GameUI...');
+                demoContainer = new MockContainer();
+                gameUI = new GameUI(demoContainer);
+                debugLog('GameUI initialized successfully', gameUI);
+                
+                // イベントハンドラー設定
+                gameUI.onMenuSelect((item) => {
+                    debugLog('Menu selected:', item);
+                    alert(`選択されたメニュー: ${item}`);
+                });
+                
+                gameUI.onSettingChange((key, value) => {
+                    debugLog('Setting changed:', key, value);
+                    alert(`設定変更: ${key} = ${value}`);
+                });
+                
+                gameUI.onKeyPress((key) => {
+                    debugLog('Key pressed:', key);
+                });
+                
+                gameUI.onClick((action) => {
+                    debugLog('Click action:', action);
+                });
+                
+                updateInfo();
+                debugLog('GameUI initialization completed');
+            } catch (error) {
+                debugLog('Error initializing GameUI:', error);
+                alert(`GameUI初期化エラー: ${error.message}`);
+            }
+        }
+        
+        // 情報更新
+        function updateInfo() {
+            try {
+                const currentScreen = gameUI.getCurrentScreen();
+                const screenHistory = gameUI.getScreenHistory();
+                const currentTheme = gameUI.getCurrentTheme();
+                const deviceType = gameUI.getDeviceType();
+                
+                document.getElementById('current-screen').textContent = currentScreen || 'なし';
+                document.getElementById('screen-history').textContent = screenHistory.join(' → ') || 'なし';
+                document.getElementById('current-theme').textContent = currentTheme.theme || 'デフォルト';
+                document.getElementById('device-type').textContent = deviceType || 'デスクトップ';
+                
+                debugLog('Info updated', { currentScreen, screenHistory, currentTheme, deviceType });
+            } catch (error) {
+                debugLog('Error updating info:', error);
+            }
+        }
+        
+        // メニュー画面表示
+        window.showMenu = function() {
+            try {
+                debugLog('showMenu called');
+                if (!gameUI) {
+                    debugLog('GameUI not initialized');
+                    alert('GameUIが初期化されていません');
+                    return;
+                }
+                
+                gameUI.showMenu(['Start Game', 'Settings', 'High Scores', 'Exit']);
+                updateInfo();
+                debugLog('Menu screen displayed');
+            } catch (error) {
+                debugLog('Error showing menu:', error);
+                alert(`メニュー画面表示エラー: ${error.message}`);
+            }
+        };
+        
+        // ゲーム画面表示
+        window.showGame = function() {
+            try {
+                debugLog('showGame called');
+                if (!gameUI) {
+                    debugLog('GameUI not initialized');
+                    alert('GameUIが初期化されていません');
+                    return;
+                }
+                
+                gameUI.showGame();
+                updateInfo();
+                debugLog('Game screen displayed');
+            } catch (error) {
+                debugLog('Error showing game:', error);
+                alert(`ゲーム画面表示エラー: ${error.message}`);
+            }
+        };
+        
+        // 設定画面表示
+        window.showSettings = function() {
+            try {
+                debugLog('showSettings called');
+                if (!gameUI) {
+                    debugLog('GameUI not initialized');
+                    alert('GameUIが初期化されていません');
+                    return;
+                }
+                
+                const settings = {
+                    difficulty: 'normal',
+                    soundEnabled: true,
+                    musicVolume: 0.7,
+                    sfxVolume: 0.8
+                };
+                gameUI.showSettings(settings);
+                updateInfo();
+                debugLog('Settings screen displayed');
+            } catch (error) {
+                debugLog('Error showing settings:', error);
+                alert(`設定画面表示エラー: ${error.message}`);
+            }
+        };
+        
+        // 高スコア画面表示
+        window.showHighScores = function() {
+            try {
+                debugLog('showHighScores called');
+                if (!gameUI) {
+                    debugLog('GameUI not initialized');
+                    alert('GameUIが初期化されていません');
+                    return;
+                }
+                
+                const highScores = [
+                    { player: 'Player1', score: 25000, level: 10, lines: 50 },
+                    { player: 'Player2', score: 20000, level: 8, lines: 40 },
+                    { player: 'Player3', score: 15000, level: 6, lines: 30 },
+                    { player: 'Player4', score: 12000, level: 5, lines: 25 },
+                    { player: 'Player5', score: 10000, level: 4, lines: 20 }
+                ];
+                gameUI.showHighScores(highScores);
+                updateInfo();
+                debugLog('High scores screen displayed');
+            } catch (error) {
+                debugLog('Error showing high scores:', error);
+                alert(`高スコア画面表示エラー: ${error.message}`);
+            }
+        };
+        
+        // 前の画面に戻る
+        window.goBack = function() {
+            try {
+                debugLog('goBack called');
+                if (!gameUI) {
+                    debugLog('GameUI not initialized');
+                    alert('GameUIが初期化されていません');
+                    return;
+                }
+                
+                gameUI.goBack();
+                updateInfo();
+                debugLog('Went back to previous screen');
+            } catch (error) {
+                debugLog('Error going back:', error);
+                alert(`前の画面に戻るエラー: ${error.message}`);
+            }
+        };
+        
+        // ゲーム情報更新
+        window.updateGameInfo = function() {
+            try {
+                debugLog('updateGameInfo called');
+                if (!gameUI) {
+                    debugLog('GameUI not initialized');
+                    alert('GameUIが初期化されていません');
+                    return;
+                }
+                
+                if (gameUI.getCurrentScreen() === 'game') {
+                    const gameInfo = {
+                        score: Math.floor(Math.random() * 50000) + 10000,
+                        level: Math.floor(Math.random() * 20) + 1,
+                        lines: Math.floor(Math.random() * 100) + 10,
+                        nextPiece: ['I', 'O', 'T', 'S', 'Z', 'J', 'L'][Math.floor(Math.random() * 7)]
+                    };
+                    gameUI.updateGameInfo(gameInfo);
+                    alert(`ゲーム情報更新:\nスコア: ${gameInfo.score.toLocaleString()}\nレベル: ${gameInfo.level}\nライン: ${gameInfo.lines}\n次のピース: ${gameInfo.nextPiece}`);
+                    debugLog('Game info updated', gameInfo);
+                } else {
+                    alert('ゲーム画面を先に表示してください');
+                }
+            } catch (error) {
+                debugLog('Error updating game info:', error);
+                alert(`ゲーム情報更新エラー: ${error.message}`);
+            }
+        };
+        
+        // ゲーム状態変更
+        window.setGameState = function() {
+            try {
+                debugLog('setGameState called');
+                if (!gameUI) {
+                    debugLog('GameUI not initialized');
+                    alert('GameUIが初期化されていません');
+                    return;
+                }
+                
+                if (gameUI.getCurrentScreen() === 'game') {
+                    const states = ['paused', 'gameOver', 'normal'];
+                    const randomState = states[Math.floor(Math.random() * states.length)];
+                    gameUI.setGameState(randomState);
+                    alert(`ゲーム状態変更: ${randomState}`);
+                    debugLog('Game state changed', randomState);
+                } else {
+                    alert('ゲーム画面を先に表示してください');
+                }
+            } catch (error) {
+                debugLog('Error setting game state:', error);
+                alert(`ゲーム状態変更エラー: ${error.message}`);
+            }
+        };
+        
+        // 画面クリア
+        window.clearScreen = function() {
+            try {
+                debugLog('clearScreen called');
+                demoContainer.innerHTML = `
+                    <div style="text-align: center; padding: 100px;">
+                        <h2 style="color: #00ff00; font-size: 2em;">GameUI Demo</h2>
+                        <p style="color: #cccccc; font-size: 1.2em;">上記のボタンをクリックして各画面を確認してください</p>
+                        <p style="color: #888888; font-size: 1em;">実装されたGameUIの全機能をテストできます</p>
+                    </div>
+                `;
+                updateInfo();
+                debugLog('Screen cleared');
+            } catch (error) {
+                debugLog('Error clearing screen:', error);
+                alert(`画面クリアエラー: ${error.message}`);
+            }
+        };
+        
+        // ページ読み込み完了後に初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            debugLog('DOM loaded, starting initialization...');
+            setTimeout(initGameUI, 100); // 少し遅延を入れて初期化
+        });
+        
+        // エラーハンドリング
+        window.addEventListener('error', (event) => {
+            debugLog('Global error:', event.error);
+        });
+        
+        window.addEventListener('unhandledrejection', (event) => {
+            debugLog('Unhandled promise rejection:', event.reason);
+        });
+    </script>
+</body>
+</html>

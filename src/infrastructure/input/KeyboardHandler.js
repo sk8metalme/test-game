@@ -1,15 +1,15 @@
 /**
  * KeyboardHandler.js - キーボード入力処理システム
- * 
+ *
  * オニオンアーキテクチャ: Infrastructure Layer
- * 
+ *
  * 責任:
  * - キーボード入力の捕捉と処理
  * - DAS（Delayed Auto Shift）システム
  * - 入力バッファリングとデバウンス
  * - キーマッピング管理
  * - 入力統計の収集
- * 
+ *
  * @tdd-development-expert との協力実装
  */
 
@@ -20,53 +20,53 @@ export default class KeyboardHandler {
   constructor(callbacks = {}) {
     this.callbacks = this._validateCallbacks(callbacks);
     this.isEnabled = true;
-    
+
     // キーマッピング（カスタマイズ可能）
     this.keyMapping = {
       // 移動キー
       ArrowLeft: 'moveLeft',
       ArrowRight: 'moveRight',
       ArrowDown: 'moveDown',
-      
+
       // 回転キー
       ArrowUp: 'rotateClockwise',
       KeyZ: 'rotateCounterClockwise',
       KeyX: 'rotateClockwise',
-      
+
       // アクションキー
       Space: 'hardDrop',
       KeyC: 'hold',
-      
+
       // ゲーム制御
       Escape: 'pause',
-      KeyR: 'reset'
+      KeyR: 'reset',
     };
-    
+
     // DAS（Delayed Auto Shift）設定
     this.dasConfig = {
-      delay: 167,   // 10フレーム at 60fps (ms)
-      repeat: 33    // 2フレーム at 60fps (ms)
+      delay: 167, // 10フレーム at 60fps (ms)
+      repeat: 33, // 2フレーム at 60fps (ms)
     };
-    
+
     // DAS状態管理
     this.dasStates = new Map();
-    
+
     // 入力バッファ（重複防止・デバウンス用）
     this.inputBuffer = new Map();
     this.maxBufferSize = 10;
-    
+
     // 統計情報
     this.statistics = {
       totalInputs: 0,
       actionCounts: {},
       firstInputTime: null,
-      lastInputTime: null
+      lastInputTime: null,
     };
-    
+
     // イベントリスナーのバインド
     this.boundKeyDown = this.handleKeyDown.bind(this);
     this.boundKeyUp = this.handleKeyUp.bind(this);
-    
+
     // イベントリスナー登録
     this._attachEventListeners();
   }
@@ -82,7 +82,7 @@ export default class KeyboardHandler {
 
     const key = this._normalizeKey(event.key, event.code);
     const action = this.keyMapping[key];
-    
+
     if (!action) {
       return; // マッピングされていないキー
     }
@@ -98,15 +98,15 @@ export default class KeyboardHandler {
 
     // アクション実行
     this._executeAction(action);
-    
+
     // DAS開始（移動系アクションのみ）
     if (this._isDASEnabledAction(action)) {
       this._startDAS(key, action);
     }
-    
+
     // 統計更新
     this._updateStatistics(action, event.timeStamp);
-    
+
     // 入力バッファ更新
     this._updateInputBuffer(key, event.timeStamp);
   }
@@ -121,10 +121,10 @@ export default class KeyboardHandler {
     }
 
     const key = this._normalizeKey(event.key, event.code);
-    
+
     // DAS停止
     this._stopDAS(key);
-    
+
     // 入力バッファからクリア
     this.inputBuffer.delete(key);
   }
@@ -137,8 +137,8 @@ export default class KeyboardHandler {
       return;
     }
 
-    const currentTime = Date.now();
-    
+    const currentTime = this._getCurrentTime();
+
     for (const [, dasState] of this.dasStates) {
       if (this._shouldTriggerDAS(dasState, currentTime)) {
         this._executeAction(dasState.action);
@@ -234,7 +234,7 @@ export default class KeyboardHandler {
    */
   getInputStatistics() {
     const stats = { ...this.statistics };
-    
+
     // 平均入力レート計算
     if (stats.firstInputTime && stats.lastInputTime && stats.totalInputs > 1) {
       const duration = stats.lastInputTime - stats.firstInputTime;
@@ -242,7 +242,7 @@ export default class KeyboardHandler {
     } else {
       stats.averageInputRate = 0;
     }
-    
+
     return stats;
   }
 
@@ -254,7 +254,7 @@ export default class KeyboardHandler {
       totalInputs: 0,
       actionCounts: {},
       firstInputTime: null,
-      lastInputTime: null
+      lastInputTime: null,
     };
   }
 
@@ -278,30 +278,30 @@ export default class KeyboardHandler {
    */
   _validateCallbacks(callbacks) {
     const validCallbacks = {};
-    
+
     // 必要なコールバックの一覧とアクション名のマッピング
     const callbackMapping = {
-      'onMoveLeft': 'moveLeft',
-      'onMoveRight': 'moveRight', 
-      'onMoveDown': 'moveDown',
-      'onRotateClockwise': 'rotateClockwise',
-      'onRotateCounterClockwise': 'rotateCounterClockwise',
-      'onHardDrop': 'hardDrop',
-      'onHold': 'hold',
-      'onPause': 'pause',
-      'onReset': 'reset'
+      onMoveLeft: 'moveLeft',
+      onMoveRight: 'moveRight',
+      onMoveDown: 'moveDown',
+      onRotateClockwise: 'rotateClockwise',
+      onRotateCounterClockwise: 'rotateCounterClockwise',
+      onHardDrop: 'hardDrop',
+      onHold: 'hold',
+      onPause: 'pause',
+      onReset: 'reset',
     };
-    
+
     Object.entries(callbackMapping).forEach(([callbackName, actionName]) => {
       const callback = callbacks[callbackName];
-      
+
       if (typeof callback === 'function') {
         validCallbacks[actionName] = callback;
       } else {
         validCallbacks[actionName] = () => {}; // no-op
       }
     });
-    
+
     return validCallbacks;
   }
 
@@ -312,8 +312,7 @@ export default class KeyboardHandler {
    * @returns {boolean}
    */
   _isValidEvent(event) {
-    return event && typeof event === 'object' && 
-           (event.key || event.code);
+    return event && typeof event === 'object' && (event.key || event.code);
   }
 
   /**
@@ -328,12 +327,12 @@ export default class KeyboardHandler {
     if (key === ' ') {
       return 'Space';
     }
-    
+
     // コードが利用可能ならコードを優先
-    if (code && code.startsWith('Key') || code.startsWith('Arrow')) {
+    if ((code && code.startsWith('Key')) || code.startsWith('Arrow')) {
       return code;
     }
-    
+
     return key;
   }
 
@@ -346,13 +345,13 @@ export default class KeyboardHandler {
    */
   _isBufferedInput(key, timeStamp) {
     const buffered = this.inputBuffer.get(key);
-    
+
     if (!buffered) {
       return false;
     }
-    
+
     // 同一フレーム内（16ms以内）の重複入力をバッファ
-    return (timeStamp - buffered.timeStamp) < 16;
+    return timeStamp - buffered.timeStamp < 16;
   }
 
   /**
@@ -362,7 +361,7 @@ export default class KeyboardHandler {
    */
   _executeAction(action) {
     const callback = this.callbacks[action];
-    
+
     if (typeof callback === 'function') {
       try {
         callback();
@@ -392,13 +391,13 @@ export default class KeyboardHandler {
    * @param {string} action - アクション
    */
   _startDAS(key, action) {
-    const currentTime = Date.now();
-    
+    const currentTime = this._getCurrentTime();
+
     this.dasStates.set(key, {
       action: action,
       startTime: currentTime,
       lastTrigger: currentTime,
-      phase: 'delay' // 'delay' -> 'repeat'
+      phase: 'delay', // 'delay' -> 'repeat'
     });
   }
 
@@ -439,7 +438,7 @@ export default class KeyboardHandler {
         return true;
       }
     }
-    
+
     return false;
   }
 
@@ -451,13 +450,13 @@ export default class KeyboardHandler {
    */
   _updateStatistics(action, timeStamp) {
     this.statistics.totalInputs++;
-    
+
     // アクション別カウント
     if (!this.statistics.actionCounts[action]) {
       this.statistics.actionCounts[action] = 0;
     }
     this.statistics.actionCounts[action]++;
-    
+
     // 時間記録
     if (!this.statistics.firstInputTime) {
       this.statistics.firstInputTime = timeStamp;
@@ -478,10 +477,10 @@ export default class KeyboardHandler {
       const oldestKey = this.inputBuffer.keys().next().value;
       this.inputBuffer.delete(oldestKey);
     }
-    
+
     this.inputBuffer.set(key, {
       timeStamp: timeStamp,
-      processed: true
+      processed: true,
     });
   }
 
@@ -502,6 +501,19 @@ export default class KeyboardHandler {
       document.addEventListener('keydown', this.boundKeyDown, { passive: false });
       document.addEventListener('keyup', this.boundKeyUp, { passive: false });
     }
+  }
+
+  /**
+   * 現在時刻取得（テスト環境対応）
+   * @private
+   * @returns {number} 現在時刻（ミリ秒）
+   */
+  _getCurrentTime() {
+    // テスト環境ではjest.now()を使用、本番環境ではDate.now()を使用
+    if (typeof jest !== 'undefined' && jest.now) {
+      return jest.now();
+    }
+    return Date.now();
   }
 
   /**

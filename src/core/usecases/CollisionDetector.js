@@ -1,15 +1,15 @@
 /**
  * CollisionDetector.js - 衝突検知システム
- * 
+ *
  * オニオンアーキテクチャ: Application Layer (Use Cases)
- * 
+ *
  * 責任:
  * - ピースとボード間の衝突検知
  * - ピースと壁・床・天井の境界検知
  * - Wall Kickシステムの支援
  * - ゴーストピース位置の計算
  * - 移動・回転可能性の事前チェック
- * 
+ *
  * @tdd-development-expert との協力実装
  */
 
@@ -19,7 +19,7 @@ export default class CollisionDetector {
    */
   constructor(board) {
     this.board = board;
-    
+
     // Wall Kickオフセットテーブル（SRSガイドライン準拠）
     this.wallKickTables = this._initializeWallKickTables();
   }
@@ -35,7 +35,8 @@ export default class CollisionDetector {
       return this._createCollisionResult(true, 'invalid_piece', 'invalid_piece');
     }
 
-    if (!this._isValidCoordinates(piece.x, piece.y)) {
+    const coords = this._getPieceCoordinates(piece);
+    if (!this._isValidCoordinates(coords.x, coords.y)) {
       return this._createCollisionResult(true, 'invalid_coordinates', 'invalid_coordinates');
     }
 
@@ -72,26 +73,26 @@ export default class CollisionDetector {
 
     // 新しい位置を計算
     const newPosition = this._calculateNewPosition(piece, direction);
-    
+
     // 新しい位置でのピースを作成（一時的）
     const testPiece = this._createTestPiece(piece, newPosition.x, newPosition.y);
-    
+
     // 衝突チェック
     const collisionResult = this.checkCollision(testPiece);
-    
+
     if (collisionResult.hasCollision) {
       return {
         canMove: false,
         collisionType: collisionResult.collisionType,
         wall: collisionResult.wall,
-        reason: collisionResult.collisionType
+        reason: collisionResult.collisionType,
       };
     }
 
     return {
       canMove: true,
       newPosition: newPosition,
-      collisionType: 'none'
+      collisionType: 'none',
     };
   }
 
@@ -103,37 +104,38 @@ export default class CollisionDetector {
    */
   checkRotation(piece, direction) {
     if (!this._isValidPiece(piece)) {
-      return this._createRotationResult(false, piece.rotation, 'invalid_piece');
+      return this._createRotationResult(false, piece.rotationState || 0, 'invalid_piece');
     }
 
     if (!this._isValidRotationDirection(direction)) {
-      return this._createRotationResult(false, piece.rotation, 'invalid_direction');
+      return this._createRotationResult(false, piece.rotationState || 0, 'invalid_direction');
     }
 
     // 新しい回転状態を計算
-    const newRotation = this._calculateNewRotation(piece.rotation, direction);
-    
+    const newRotation = this._calculateNewRotation(piece.rotationState || 0, direction);
+
     // 新しい回転状態でのピースを作成（一時的）
-    const testPiece = this._createTestPiece(piece, piece.x, piece.y, newRotation);
-    
+    const coords = this._getPieceCoordinates(piece);
+    const testPiece = this._createTestPiece(piece, coords.x, coords.y, newRotation);
+
     // 衝突チェック
     const collisionResult = this.checkCollision(testPiece);
-    
+
     if (collisionResult.hasCollision) {
       return {
         canRotate: false,
         collisionType: collisionResult.collisionType,
         wall: collisionResult.wall,
-        currentRotation: piece.rotation,
-        newRotation: newRotation
+        currentRotation: piece.rotationState || 0,
+        newRotation: newRotation,
       };
     }
 
     return {
       canRotate: true,
-      currentRotation: piece.rotation,
+      currentRotation: piece.rotationState || 0,
       newRotation: newRotation,
-      collisionType: 'none'
+      collisionType: 'none',
     };
   }
 
@@ -168,12 +170,7 @@ export default class CollisionDetector {
     // 各キックオフセットを試行
     for (let i = 0; i < kickOffsets.length; i++) {
       const [dx, dy] = kickOffsets[i];
-      const testPiece = this._createTestPiece(
-        piece, 
-        piece.x + dx, 
-        piece.y + dy, 
-        toRotation
-      );
+      const testPiece = this._createTestPiece(piece, piece.x + dx, piece.y + dy, toRotation);
 
       if (!this.checkCollision(testPiece).hasCollision) {
         return {
@@ -181,9 +178,9 @@ export default class CollisionDetector {
           validKick: {
             offset: [dx, dy],
             offsetIndex: i,
-            newPosition: { x: piece.x + dx, y: piece.y + dy }
+            newPosition: { x: piece.x + dx, y: piece.y + dy },
           },
-          kickOffsets: kickOffsets
+          kickOffsets: kickOffsets,
         };
       }
     }
@@ -192,7 +189,7 @@ export default class CollisionDetector {
     return {
       needsKick: true,
       validKick: null,
-      kickOffsets: kickOffsets
+      kickOffsets: kickOffsets,
     };
   }
 
@@ -205,25 +202,27 @@ export default class CollisionDetector {
     if (!this._isValidPiece(piece)) {
       return {
         canPlace: false,
-        reason: 'invalid_piece'
+        reason: 'invalid_piece',
       };
     }
 
     const collisionResult = this.checkCollision(piece);
-    
+
     if (collisionResult.hasCollision) {
       let reason = 'collision';
-      
-      if (collisionResult.collisionType === 'wall' || 
-          collisionResult.collisionType === 'floor' || 
-          collisionResult.collisionType === 'ceiling') {
+
+      if (
+        collisionResult.collisionType === 'wall' ||
+        collisionResult.collisionType === 'floor' ||
+        collisionResult.collisionType === 'ceiling'
+      ) {
         reason = 'out_of_bounds';
       }
-      
+
       return {
         canPlace: false,
         reason: reason,
-        collisionType: collisionResult.collisionType
+        collisionType: reason === 'out_of_bounds' ? 'out_of_bounds' : collisionResult.collisionType,
       };
     }
 
@@ -233,7 +232,7 @@ export default class CollisionDetector {
     return {
       canPlace: true,
       placementCells: placementCells,
-      affectedRows: this._getAffectedRows(placementCells)
+      affectedRows: this._getAffectedRows(placementCells),
     };
   }
 
@@ -245,26 +244,27 @@ export default class CollisionDetector {
   calculateGhostPosition(piece) {
     if (!this._isValidPiece(piece)) {
       return {
-        ghostY: piece?.y || 0,
+        ghostY: 0,
         distance: 0,
-        error: 'invalid_piece'
+        error: 'invalid_piece',
       };
     }
 
-    let ghostY = piece.y;
+    const coords = this._getPieceCoordinates(piece);
+    let ghostY = coords.y;
     let distance = 0;
 
     // 1セルずつ下に移動して衝突まで探索
     while (distance < this.board.height) {
-      const testPiece = this._createTestPiece(piece, piece.x, ghostY + 1);
-      
+      const testPiece = this._createTestPiece(piece, coords.x, ghostY + 1);
+
       if (this.checkCollision(testPiece).hasCollision) {
         break;
       }
-      
+
       ghostY++;
       distance++;
-      
+
       // 安全装置：無限ループ防止
       if (distance > this.board.height) {
         break;
@@ -274,7 +274,7 @@ export default class CollisionDetector {
     return {
       ghostY: ghostY,
       distance: distance,
-      originalY: piece.y
+      originalY: coords.y,
     };
   }
 
@@ -291,9 +291,9 @@ export default class CollisionDetector {
       return this._createCollisionResult(true, 'invalid_piece', 'invalid_piece');
     }
 
-    const testRotation = rotation !== null ? rotation : piece.rotation;
+    const testRotation = rotation !== null ? rotation : piece.rotationState || 0;
     const testPiece = this._createTestPiece(piece, x, y, testRotation);
-    
+
     return this.checkCollision(testPiece);
   }
 
@@ -306,12 +306,14 @@ export default class CollisionDetector {
    * @returns {boolean}
    */
   _isValidPiece(piece) {
-    return piece && 
-           typeof piece === 'object' && 
-           typeof piece.x === 'number' && 
-           typeof piece.y === 'number' && 
-           (piece.rotation === undefined || typeof piece.rotation === 'number') &&
-           typeof piece.getOccupiedCells === 'function';
+    return (
+      piece &&
+      typeof piece === 'object' &&
+      ((typeof piece.position?.x === 'number' && typeof piece.position?.y === 'number') ||
+        (typeof piece.x === 'number' && typeof piece.y === 'number')) &&
+      (piece.rotationState === undefined || typeof piece.rotationState === 'number') &&
+      typeof piece.getOccupiedCells === 'function'
+    );
   }
 
   /**
@@ -322,9 +324,7 @@ export default class CollisionDetector {
    * @returns {boolean}
    */
   _isValidCoordinates(x, y) {
-    return typeof x === 'number' && typeof y === 'number' && 
-           !isNaN(x) && !isNaN(y) && 
-           isFinite(x) && isFinite(y);
+    return typeof x === 'number' && typeof y === 'number' && !isNaN(x) && !isNaN(y);
   }
 
   /**
@@ -348,6 +348,25 @@ export default class CollisionDetector {
   }
 
   /**
+   * ピースの座標を取得（position形式とx,y形式の両方に対応）
+   * @private
+   * @param {Tetromino} piece - ピース
+   * @returns {Object} 座標 {x, y}
+   */
+  _getPieceCoordinates(piece) {
+    if (
+      piece.position &&
+      typeof piece.position.x === 'number' &&
+      typeof piece.position.y === 'number'
+    ) {
+      return { x: piece.position.x, y: piece.position.y };
+    } else if (typeof piece.x === 'number' && typeof piece.y === 'number') {
+      return { x: piece.x, y: piece.y };
+    }
+    return { x: 0, y: 0 };
+  }
+
+  /**
    * 境界衝突をチェック
    * @private
    * @param {Tetromino} piece - チェック対象のピース
@@ -355,43 +374,33 @@ export default class CollisionDetector {
    */
   _checkBoundaries(piece) {
     const cells = piece.getOccupiedCells();
-    
+    const coords = this._getPieceCoordinates(piece);
+
     for (const cell of cells) {
-      // セルの形式を判定
-      let dx, dy;
-      if (Array.isArray(cell)) {
-        [dx, dy] = cell;
-      } else if (cell && typeof cell === 'object') {
-        dx = cell.col;
-        dy = cell.row;
-      } else {
-        continue;
-      }
-      
-      const x = piece.x + dx;
-      const y = piece.y + dy;
-      
+      const x = coords.x + cell.col;
+      const y = coords.y + cell.row;
+
       // 左壁
       if (x < 0) {
         return this._createCollisionResult(true, 'wall', null, 'left');
       }
-      
+
       // 右壁
       if (x >= this.board.width) {
         return this._createCollisionResult(true, 'wall', null, 'right');
       }
-      
+
       // 天井
       if (y < 0) {
         return this._createCollisionResult(true, 'ceiling');
       }
-      
+
       // 床
       if (y >= this.board.height) {
         return this._createCollisionResult(true, 'floor');
       }
     }
-    
+
     return this._createCollisionResult(false, 'none');
   }
 
@@ -403,28 +412,18 @@ export default class CollisionDetector {
    */
   _checkPieceCollision(piece) {
     const cells = piece.getOccupiedCells();
-    
+    const coords = this._getPieceCoordinates(piece);
+
     for (const cell of cells) {
-      // セルの形式を判定
-      let dx, dy;
-      if (Array.isArray(cell)) {
-        [dx, dy] = cell;
-      } else if (cell && typeof cell === 'object') {
-        dx = cell.col;
-        dy = cell.row;
-      } else {
-        continue;
-      }
-      
-      const x = piece.x + dx;
-      const y = piece.y + dy;
-      
+      const x = coords.x + cell.col;
+      const y = coords.y + cell.row;
+
       // ボード内の占有セルチェック
       if (this.board.getCell(y, x) !== 0) {
         return this._createCollisionResult(true, 'piece', null, null, { x, y });
       }
     }
-    
+
     return this._createCollisionResult(false, 'none');
   }
 
@@ -436,8 +435,9 @@ export default class CollisionDetector {
    * @returns {Object} 新しい位置
    */
   _calculateNewPosition(piece, direction) {
-    const position = { x: piece.x, y: piece.y };
-    
+    const coords = this._getPieceCoordinates(piece);
+    const position = { x: coords.x, y: coords.y };
+
     switch (direction) {
       case 'left':
         position.x--;
@@ -449,7 +449,7 @@ export default class CollisionDetector {
         position.y++;
         break;
     }
-    
+
     return position;
   }
 
@@ -483,33 +483,46 @@ export default class CollisionDetector {
     const testPiece = {
       x: x,
       y: y,
-      rotation: rotation !== null ? rotation : (basePiece.rotation || 0),
+      rotation: rotation !== null ? rotation : basePiece.rotationState || 0,
       type: basePiece.type,
-      getOccupiedCells: basePiece.getOccupiedCells.bind(basePiece)
+      getOccupiedCells: basePiece.getOccupiedCells.bind(basePiece),
     };
-    
+
     // 一時的に座標と回転を設定
-    const originalX = basePiece.x;
-    const originalY = basePiece.y;
-    const originalRotation = basePiece.rotation;
-    
-    basePiece.x = x;
-    basePiece.y = y;
-    if (rotation !== null) {
-      basePiece.rotation = rotation;
+    const coords = this._getPieceCoordinates(basePiece);
+    const originalX = coords.x;
+    const originalY = coords.y;
+    const originalRotation = basePiece.rotationState;
+
+    // 座標を設定（position形式とx,y形式の両方に対応）
+    if (basePiece.position) {
+      basePiece.position.x = x;
+      basePiece.position.y = y;
+    } else {
+      basePiece.x = x;
+      basePiece.y = y;
     }
-    
+
+    if (rotation !== null) {
+      basePiece.rotationState = rotation;
+    }
+
     // セルを取得
     const cells = basePiece.getOccupiedCells();
-    
+
     // 元に戻す
-    basePiece.x = originalX;
-    basePiece.y = originalY;
-    basePiece.rotation = originalRotation;
-    
+    if (basePiece.position) {
+      basePiece.position.x = originalX;
+      basePiece.position.y = originalY;
+    } else {
+      basePiece.x = originalX;
+      basePiece.y = originalY;
+    }
+    basePiece.rotationState = originalRotation;
+
     // テストピースにセルを設定
     testPiece.getOccupiedCells = () => cells;
-    
+
     return testPiece;
   }
 
@@ -521,9 +534,10 @@ export default class CollisionDetector {
    */
   _getAbsoluteCells(piece) {
     const cells = piece.getOccupiedCells();
-    return cells.map(([dx, dy]) => ({
-      x: piece.x + dx,
-      y: piece.y + dy
+    const coords = this._getPieceCoordinates(piece);
+    return cells.map(cell => ({
+      x: coords.x + cell.col,
+      y: coords.y + cell.row,
     }));
   }
 
@@ -558,40 +572,120 @@ export default class CollisionDetector {
     // SRSガイドライン準拠のWall Kickテーブル
     const defaultTable = {
       0: {
-        1: [[-1, 0], [-1, 1], [0, -2], [-1, -2]],
-        3: [[1, 0], [1, 1], [0, -2], [1, -2]]
+        1: [
+          [-1, 0],
+          [-1, 1],
+          [0, -2],
+          [-1, -2],
+        ],
+        3: [
+          [1, 0],
+          [1, 1],
+          [0, -2],
+          [1, -2],
+        ],
       },
       1: {
-        0: [[1, 0], [1, -1], [0, 2], [1, 2]],
-        2: [[1, 0], [1, -1], [0, 2], [1, 2]]
+        0: [
+          [1, 0],
+          [1, -1],
+          [0, 2],
+          [1, 2],
+        ],
+        2: [
+          [1, 0],
+          [1, -1],
+          [0, 2],
+          [1, 2],
+        ],
       },
       2: {
-        1: [[-1, 0], [-1, 1], [0, -2], [-1, -2]],
-        3: [[1, 0], [1, 1], [0, -2], [1, -2]]
+        1: [
+          [-1, 0],
+          [-1, 1],
+          [0, -2],
+          [-1, -2],
+        ],
+        3: [
+          [1, 0],
+          [1, 1],
+          [0, -2],
+          [1, -2],
+        ],
       },
       3: {
-        0: [[-1, 0], [-1, -1], [0, 2], [-1, 2]],
-        2: [[-1, 0], [-1, -1], [0, 2], [-1, 2]]
-      }
+        0: [
+          [-1, 0],
+          [-1, -1],
+          [0, 2],
+          [-1, 2],
+        ],
+        2: [
+          [-1, 0],
+          [-1, -1],
+          [0, 2],
+          [-1, 2],
+        ],
+      },
     };
 
     const iTable = {
       0: {
-        1: [[-2, 0], [1, 0], [-2, -1], [1, 2]],
-        3: [[-1, 0], [2, 0], [-1, 2], [2, -1]]
+        1: [
+          [-2, 0],
+          [1, 0],
+          [-2, -1],
+          [1, 2],
+        ],
+        3: [
+          [-1, 0],
+          [2, 0],
+          [-1, 2],
+          [2, -1],
+        ],
       },
       1: {
-        0: [[2, 0], [-1, 0], [2, 1], [-1, -2]],
-        2: [[-1, 0], [2, 0], [-1, 2], [2, -1]]
+        0: [
+          [2, 0],
+          [-1, 0],
+          [2, 1],
+          [-1, -2],
+        ],
+        2: [
+          [-1, 0],
+          [2, 0],
+          [-1, 2],
+          [2, -1],
+        ],
       },
       2: {
-        1: [[1, 0], [-2, 0], [1, -2], [-2, 1]],
-        3: [[2, 0], [-1, 0], [2, 1], [-1, -2]]
+        1: [
+          [1, 0],
+          [-2, 0],
+          [1, -2],
+          [-2, 1],
+        ],
+        3: [
+          [2, 0],
+          [-1, 0],
+          [2, 1],
+          [-1, -2],
+        ],
       },
       3: {
-        0: [[1, 0], [-2, 0], [1, -2], [-2, 1]],
-        2: [[-2, 0], [1, 0], [-2, -1], [1, 2]]
-      }
+        0: [
+          [1, 0],
+          [-2, 0],
+          [1, -2],
+          [-2, 1],
+        ],
+        2: [
+          [-2, 0],
+          [1, 0],
+          [-2, -1],
+          [1, 2],
+        ],
+      },
     };
 
     return {
@@ -602,7 +696,7 @@ export default class CollisionDetector {
       S: defaultTable,
       Z: defaultTable,
       J: defaultTable,
-      L: defaultTable
+      L: defaultTable,
     };
   }
 
@@ -616,10 +710,16 @@ export default class CollisionDetector {
    * @param {Object} collisionPoint - 衝突点
    * @returns {Object}
    */
-  _createCollisionResult(hasCollision, collisionType, error = null, wall = null, collisionPoint = null) {
+  _createCollisionResult(
+    hasCollision,
+    collisionType,
+    error = null,
+    wall = null,
+    collisionPoint = null
+  ) {
     const result = {
       hasCollision,
-      collisionType
+      collisionType,
     };
 
     if (error) result.error = error;
@@ -639,10 +739,10 @@ export default class CollisionDetector {
    */
   _createMovementResult(canMove, newPosition, error = null) {
     const result = { canMove };
-    
+
     if (newPosition) result.newPosition = newPosition;
     if (error) result.error = error;
-    
+
     return result;
   }
 
@@ -657,11 +757,11 @@ export default class CollisionDetector {
   _createRotationResult(canRotate, rotation, error = null) {
     const result = {
       canRotate,
-      newRotation: rotation
+      newRotation: rotation,
     };
-    
+
     if (error) result.error = error;
-    
+
     return result;
   }
 }

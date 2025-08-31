@@ -14,7 +14,9 @@ export default class Board {
    * @returns {Array<Array<number>>} 20x10の2次元配列（0で初期化）
    */
   initializeGrid() {
-    return Array(this.ROWS).fill(null).map(() => Array(this.COLS).fill(0));
+    return Array(this.ROWS)
+      .fill(null)
+      .map(() => Array(this.COLS).fill(0));
   }
 
   /**
@@ -66,13 +68,13 @@ export default class Board {
    */
   getFullLines() {
     const fullLines = [];
-    
+
     for (let row = 0; row < this.ROWS; row++) {
       if (this.isLineFull(row)) {
         fullLines.push(row);
       }
     }
-    
+
     return fullLines;
   }
 
@@ -97,7 +99,7 @@ export default class Board {
     if (!Number.isInteger(row) || !Number.isInteger(col)) {
       throw new Error(`Position must be integers: (${row}, ${col})`);
     }
-    
+
     if (row < 0 || row >= this.ROWS || col < 0 || col >= this.COLS) {
       throw new Error(`Position out of bounds: (${row}, ${col})`);
     }
@@ -121,32 +123,32 @@ export default class Board {
   clearLines() {
     const fullLines = this.getFullLines();
     const linesCleared = fullLines.length;
-    
+
     if (linesCleared === 0) {
       return { linesCleared: 0, clearedRows: [], isTetris: false };
     }
 
     // 新しいグリッドを作成（削除されないラインのみ）
     const newGrid = [];
-    
+
     // 空のラインを上部に追加（削除された分だけ）
     for (let i = 0; i < linesCleared; i++) {
       newGrid.push(Array(this.COLS).fill(0));
     }
-    
+
     // 削除されないラインを下部に追加
     for (let row = 0; row < this.ROWS; row++) {
       if (!fullLines.includes(row)) {
         newGrid.push([...this.grid[row]]);
       }
     }
-    
+
     this.grid = newGrid;
 
     return {
       linesCleared,
       clearedRows: fullLines,
-      isTetris: linesCleared === 4
+      isTetris: linesCleared === 4,
     };
   }
 
@@ -161,13 +163,12 @@ export default class Board {
     return pieceShape.every(cell => {
       const newRow = cell.row + offsetY;
       const newCol = cell.col + offsetX;
-      
+
       // 境界チェック
-      if (newRow < 0 || newRow >= this.ROWS || 
-          newCol < 0 || newCol >= this.COLS) {
+      if (newRow < 0 || newRow >= this.ROWS || newCol < 0 || newCol >= this.COLS) {
         return false;
       }
-      
+
       // 衝突チェック
       return this.isEmpty(newRow, newCol);
     });
@@ -187,7 +188,7 @@ export default class Board {
     }
 
     const pieceId = this.generatePieceId();
-    
+
     pieceShape.forEach(cell => {
       const newRow = cell.row + offsetY;
       const newCol = cell.col + offsetX;
@@ -228,16 +229,16 @@ export default class Board {
     if (state === null || state === undefined) {
       throw new Error('Invalid state: cannot be null or undefined');
     }
-    
+
     if (!Array.isArray(state) || state.length !== this.ROWS) {
       throw new Error('Invalid state: must be 20x10 grid');
     }
-    
+
     for (let row = 0; row < this.ROWS; row++) {
       if (!Array.isArray(state[row]) || state[row].length !== this.COLS) {
         throw new Error(`Invalid state: row ${row} must have ${this.COLS} columns`);
       }
-      
+
       for (let col = 0; col < this.COLS; col++) {
         this.grid[row][col] = state[row][col];
       }
@@ -251,7 +252,7 @@ export default class Board {
   getStatistics() {
     let filledCells = 0;
     let highestOccupiedRow = -1;
-    
+
     for (let row = 0; row < this.ROWS; row++) {
       for (let col = 0; col < this.COLS; col++) {
         if (!this.isEmpty(row, col)) {
@@ -272,7 +273,7 @@ export default class Board {
       filledCells,
       emptyCells,
       fillPercentage: Math.round(fillPercentage * 100) / 100,
-      highestOccupiedRow
+      highestOccupiedRow,
     };
   }
 
@@ -322,21 +323,21 @@ export default class Board {
       } else {
         continue;
       }
-      
-      const x = piece.x + dx;
-      const y = piece.y + dy;
-      
+
+      const x = piece.position.x + dx;
+      const y = piece.position.y + dy;
+
       // 境界チェック
       if (x < 0 || x >= this.COLS || y < 0 || y >= this.ROWS) {
         return true;
       }
-      
+
       // 既存ピースとの衝突チェック
       if (this.grid[y][x] !== 0) {
         return true;
       }
     }
-    
+
     return false;
   }
 

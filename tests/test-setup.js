@@ -4,7 +4,7 @@
  */
 
 // Mock Canvas API for jsdom environment
-global.HTMLCanvasElement.prototype.getContext = function(type) {
+global.HTMLCanvasElement.prototype.getContext = function (type) {
   if (type === '2d') {
     return {
       fillStyle: '',
@@ -13,7 +13,7 @@ global.HTMLCanvasElement.prototype.getContext = function(type) {
       font: '',
       textAlign: 'start',
       textBaseline: 'alphabetic',
-      
+
       // Drawing methods
       fillRect: jest.fn(),
       strokeRect: jest.fn(),
@@ -21,7 +21,7 @@ global.HTMLCanvasElement.prototype.getContext = function(type) {
       fillText: jest.fn(),
       strokeText: jest.fn(),
       drawImage: jest.fn(),
-      
+
       // Path methods
       beginPath: jest.fn(),
       closePath: jest.fn(),
@@ -31,39 +31,39 @@ global.HTMLCanvasElement.prototype.getContext = function(type) {
       arc: jest.fn(),
       fill: jest.fn(),
       stroke: jest.fn(),
-      
+
       // Transform methods
       save: jest.fn(),
       restore: jest.fn(),
       translate: jest.fn(),
       rotate: jest.fn(),
       scale: jest.fn(),
-      
+
       // Measurement methods
       measureText: jest.fn(() => ({ width: 0 })),
-      
+
       // Image data methods
       getImageData: jest.fn(),
       putImageData: jest.fn(),
-      createImageData: jest.fn()
+      createImageData: jest.fn(),
     };
   }
   return null;
 };
 
 // Mock requestAnimationFrame
-global.requestAnimationFrame = jest.fn((callback) => {
+global.requestAnimationFrame = jest.fn(callback => {
   return setTimeout(callback, 16); // Simulate 60fps
 });
 
-global.cancelAnimationFrame = jest.fn((id) => {
+global.cancelAnimationFrame = jest.fn(id => {
   clearTimeout(id);
 });
 
 // Mock performance.now for consistent timing in tests
 const mockPerformanceNow = jest.fn(() => Date.now());
 Object.defineProperty(global.performance, 'now', {
-  value: mockPerformanceNow
+  value: mockPerformanceNow,
 });
 
 // Mock Audio API
@@ -76,7 +76,7 @@ global.Audio = jest.fn(() => ({
   duration: 0,
   paused: true,
   addEventListener: jest.fn(),
-  removeEventListener: jest.fn()
+  removeEventListener: jest.fn(),
 }));
 
 // Global test utilities
@@ -96,20 +96,22 @@ global.TestUtils = {
    * Create a mock game board with specified pattern
    */
   createMockBoard: (pattern = 'empty') => {
-    const board = Array(20).fill(null).map(() => Array(10).fill(0));
-    
+    const board = Array(20)
+      .fill(null)
+      .map(() => Array(10).fill(0));
+
     switch (pattern) {
       case 'empty':
         // Already initialized as empty
         break;
-        
+
       case 'full-bottom-row':
         // Fill bottom row
         for (let col = 0; col < 10; col++) {
           board[19][col] = 1;
         }
         break;
-        
+
       case 'tetris-setup':
         // Setup for 4-line clear
         for (let row = 16; row < 20; row++) {
@@ -118,7 +120,7 @@ global.TestUtils = {
           }
         }
         break;
-        
+
       case 'near-game-over':
         // Fill most of the board
         for (let row = 5; row < 20; row++) {
@@ -130,7 +132,7 @@ global.TestUtils = {
         }
         break;
     }
-    
+
     return board;
   },
 
@@ -139,13 +141,43 @@ global.TestUtils = {
    */
   createMockTetromino: (type = 'I', x = 4, y = 0, rotation = 0) => {
     const shapes = {
-      'I': [[[1, 1, 1, 1]]],
-      'O': [[[1, 1], [1, 1]]],
-      'T': [[[0, 1, 0], [1, 1, 1]]],
-      'S': [[[0, 1, 1], [1, 1, 0]]],
-      'Z': [[[1, 1, 0], [0, 1, 1]]],
-      'J': [[[1, 0, 0], [1, 1, 1]]],
-      'L': [[[0, 0, 1], [1, 1, 1]]]
+      I: [[[1, 1, 1, 1]]],
+      O: [
+        [
+          [1, 1],
+          [1, 1],
+        ],
+      ],
+      T: [
+        [
+          [0, 1, 0],
+          [1, 1, 1],
+        ],
+      ],
+      S: [
+        [
+          [0, 1, 1],
+          [1, 1, 0],
+        ],
+      ],
+      Z: [
+        [
+          [1, 1, 0],
+          [0, 1, 1],
+        ],
+      ],
+      J: [
+        [
+          [1, 0, 0],
+          [1, 1, 1],
+        ],
+      ],
+      L: [
+        [
+          [0, 0, 1],
+          [1, 1, 1],
+        ],
+      ],
     };
 
     return {
@@ -153,7 +185,7 @@ global.TestUtils = {
       shape: shapes[type][0],
       position: { x, y },
       rotation,
-      color: '#FFFFFF'
+      color: '#FFFFFF',
     };
   },
 
@@ -166,9 +198,9 @@ global.TestUtils = {
       code: key,
       keyCode: key.charCodeAt ? key.charCodeAt(0) : 0,
       bubbles: true,
-      cancelable: true
+      cancelable: true,
     });
-    
+
     document.dispatchEvent(event);
     return event;
   },
@@ -185,7 +217,7 @@ global.TestUtils = {
   /**
    * Advance game time for testing time-based mechanics
    */
-  advanceTime: (milliseconds) => {
+  advanceTime: milliseconds => {
     jest.advanceTimersByTime(milliseconds);
   },
 
@@ -203,14 +235,14 @@ global.TestUtils = {
       }),
       reset: jest.fn(() => {
         startTime = 0;
-      })
+      }),
     };
   },
 
   /**
    * Validate game state structure
    */
-  validateGameState: (state) => {
+  validateGameState: state => {
     expect(state).toHaveProperty('board');
     expect(state).toHaveProperty('currentPiece');
     expect(state).toHaveProperty('score');
@@ -223,7 +255,7 @@ global.TestUtils = {
   /**
    * Validate board state
    */
-  validateBoard: (board) => {
+  validateBoard: board => {
     expect(Array.isArray(board)).toBe(true);
     expect(board).toHaveLength(20);
     board.forEach(row => {
@@ -237,9 +269,9 @@ global.TestUtils = {
    */
   generateRandomInputSequence: (length = 10) => {
     const inputs = ['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', ' '];
-    return Array(length).fill(null).map(() => 
-      inputs[Math.floor(Math.random() * inputs.length)]
-    );
+    return Array(length)
+      .fill(null)
+      .map(() => inputs[Math.floor(Math.random() * inputs.length)]);
   },
 
   /**
@@ -247,60 +279,65 @@ global.TestUtils = {
    */
   mockLocalStorage: () => {
     const storage = {};
-    
+
     Object.defineProperty(global, 'localStorage', {
       value: {
-        getItem: jest.fn((key) => storage[key] || null),
+        getItem: jest.fn(key => storage[key] || null),
         setItem: jest.fn((key, value) => {
           storage[key] = value;
         }),
-        removeItem: jest.fn((key) => {
+        removeItem: jest.fn(key => {
           delete storage[key];
         }),
         clear: jest.fn(() => {
           Object.keys(storage).forEach(key => delete storage[key]);
         }),
-        key: jest.fn((index) => Object.keys(storage)[index] || null),
+        key: jest.fn(index => Object.keys(storage)[index] || null),
         get length() {
           return Object.keys(storage).length;
-        }
+        },
       },
-      writable: true
+      writable: true,
     });
-    
+
     return storage;
-  }
+  },
 };
 
-// Setup common test environment
+// Setup common test environment - Optimized for performance
 beforeEach(() => {
-  // Reset all mocks
-  jest.clearAllMocks();
-  
+  // Reset all mocks - Only when needed
+  if (process.env.NODE_ENV === 'test') {
+    jest.clearAllMocks();
+  }
+
   // Reset performance timing
   mockPerformanceNow.mockClear();
-  
-  // Clear any existing timers
-  jest.clearAllTimers();
-  
-  // Use fake timers for consistent testing
-  jest.useFakeTimers();
+
+  // Use fake timers for consistent testing - Only when needed
+  if (process.env.USE_FAKE_TIMERS !== 'false') {
+    jest.useFakeTimers();
+  }
 });
 
 afterEach(() => {
-  // Restore real timers after each test
-  jest.useRealTimers();
-  
-  // Clean up any DOM modifications
-  document.body.innerHTML = '';
+  // Restore real timers after each test - Only when needed
+  if (process.env.USE_FAKE_TIMERS !== 'false') {
+    jest.useRealTimers();
+  }
+
+  // Clean up DOM modifications - Only when needed
+  if (document.body.innerHTML !== '') {
+    document.body.innerHTML = '';
+  }
 });
 
-// Global error handling for tests
+// Global error handling for tests - Optimized
 global.console = {
   ...console,
-  // Suppress console.log in tests unless specifically testing logging
+  // Suppress console output in tests for performance
   log: jest.fn(),
   info: jest.fn(),
   warn: jest.fn(),
-  error: jest.fn()
+  error: jest.fn(),
 };
