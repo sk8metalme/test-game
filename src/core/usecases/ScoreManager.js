@@ -1,14 +1,14 @@
 /**
  * ScoreManager.js - スコア計算とレベル管理システム
- * 
+ *
  * オニオンアーキテクチャ: Application Layer (Use Cases)
- * 
+ *
  * 責任:
  * - 各種スコア計算（ライン削除、ドロップ、コンボ、T-Spin等）
  * - レベル進行システムの管理
  * - 落下速度の計算
  * - スコア履歴と統計の管理
- * 
+ *
  * @tdd-development-expert との協力実装
  */
 
@@ -18,7 +18,7 @@ export default class ScoreManager {
    */
   constructor(gameState) {
     this.gameState = gameState;
-    
+
     // スコア倍率テーブル
     this.scoreMultipliers = {
       single: 100,
@@ -31,15 +31,15 @@ export default class ScoreManager {
       tSpinDouble: 1200,
       tSpinTriple: 1600,
       // ドロップスコア
-      softDrop: 1,    // 1セル = 1ポイント
-      hardDrop: 2     // 1セル = 2ポイント
+      softDrop: 1, // 1セル = 1ポイント
+      hardDrop: 2, // 1セル = 2ポイント
     };
 
     // コンボテーブル
     this.comboMultipliers = [
-      0,   // コンボ0
-      50,  // コンボ1
-      50,  // コンボ2
+      0, // コンボ0
+      50, // コンボ1
+      50, // コンボ2
       100, // コンボ3
       100, // コンボ4
       100, // コンボ5
@@ -48,14 +48,14 @@ export default class ScoreManager {
       150, // コンボ8
       200, // コンボ9
       200, // コンボ10
-      200  // コンボ11以上
+      200, // コンボ11以上
     ];
 
     // レベル進行設定
     this.levelSettings = {
-      linesPerLevel: 10,    // レベルアップに必要なライン数
-      maxLevel: 99,         // 最大レベル
-      baseDropSpeed: 1000   // ベース落下速度（ms）
+      linesPerLevel: 10, // レベルアップに必要なライン数
+      maxLevel: 99, // 最大レベル
+      baseDropSpeed: 1000, // ベース落下速度（ms）
     };
 
     // スコア履歴
@@ -115,7 +115,7 @@ export default class ScoreManager {
       levelMultiplier,
       totalScore,
       lineType,
-      linesCleared
+      linesCleared,
     };
   }
 
@@ -135,7 +135,7 @@ export default class ScoreManager {
       baseScore,
       totalScore: baseScore,
       dropType: 'soft',
-      distance
+      distance,
     };
   }
 
@@ -149,13 +149,16 @@ export default class ScoreManager {
       return this._createDropScoreResult(0, 'hard');
     }
 
-    const baseScore = Math.min(distance * this.scoreMultipliers.hardDrop, Number.MAX_SAFE_INTEGER / 2);
+    const baseScore = Math.min(
+      distance * this.scoreMultipliers.hardDrop,
+      Number.MAX_SAFE_INTEGER / 2
+    );
 
     return {
       baseScore,
       totalScore: baseScore,
       dropType: 'hard',
-      distance
+      distance,
     };
   }
 
@@ -176,7 +179,7 @@ export default class ScoreManager {
     // コンボテーブルから基本スコアを取得
     const tableIndex = Math.min(comboLevel, this.comboMultipliers.length - 1);
     const bonusScore = this.comboMultipliers[tableIndex];
-    
+
     // レベル倍率適用
     const levelMultiplier = this.gameState.level;
     const totalScore = bonusScore * levelMultiplier;
@@ -185,7 +188,7 @@ export default class ScoreManager {
       comboLevel,
       bonusScore,
       levelMultiplier,
-      totalScore
+      totalScore,
     };
   }
 
@@ -239,7 +242,7 @@ export default class ScoreManager {
       totalScore,
       tSpinType,
       linesCleared,
-      isMini
+      isMini,
     };
   }
 
@@ -255,10 +258,10 @@ export default class ScoreManager {
 
     // パーフェクトクリア倍率（ライン数に応じて）
     const multipliers = {
-      1: 800,    // シングルPC
-      2: 1200,   // ダブルPC
-      3: 1800,   // トリプルPC
-      4: 2000    // テトリスPC
+      1: 800, // シングルPC
+      2: 1200, // ダブルPC
+      3: 1800, // トリプルPC
+      4: 2000, // テトリスPC
     };
 
     const multiplier = multipliers[linesCleared] || 1000; // デフォルト値
@@ -269,7 +272,7 @@ export default class ScoreManager {
       bonusScore,
       multiplier,
       linesCleared,
-      levelMultiplier: this.gameState.level
+      levelMultiplier: this.gameState.level,
     };
   }
 
@@ -285,14 +288,14 @@ export default class ScoreManager {
       hardDrop: this._getScoreValue(scoreData.hardDropScore),
       combo: this._getScoreValue(scoreData.comboScore),
       tSpin: this._getScoreValue(scoreData.tSpinScore),
-      perfectClear: this._getBonusValue(scoreData.perfectClearBonus)
+      perfectClear: this._getBonusValue(scoreData.perfectClearBonus),
     };
 
     const totalScore = Object.values(breakdown).reduce((sum, score) => sum + score, 0);
 
     return {
       totalScore,
-      breakdown
+      breakdown,
     };
   }
 
@@ -321,7 +324,8 @@ export default class ScoreManager {
     );
 
     const levelUp = newLevel > currentLevel;
-    const linesForNext = this.levelSettings.linesPerLevel - (totalLines % this.levelSettings.linesPerLevel);
+    const linesForNext =
+      this.levelSettings.linesPerLevel - (totalLines % this.levelSettings.linesPerLevel);
 
     if (levelUp) {
       this.recordLevelUp(currentLevel, newLevel, totalLines);
@@ -331,8 +335,8 @@ export default class ScoreManager {
       levelUp,
       currentLevel,
       newLevel,
-      linesForNext: levelUp ? this.levelSettings.linesPerLevel : linesForNext,
-      totalLines
+      linesForNext: linesForNext,
+      totalLines,
     };
   }
 
@@ -369,7 +373,7 @@ export default class ScoreManager {
     // レベルに応じて指数的に速くなる
     const adjustedLevel = Math.min(level, this.levelSettings.maxLevel);
     const speed = this.levelSettings.baseDropSpeed * Math.pow(0.8, adjustedLevel - 1);
-    
+
     // 最小速度は50ms
     return Math.max(speed, 50);
   }
@@ -386,7 +390,7 @@ export default class ScoreManager {
       score,
       metadata,
       timestamp: Date.now(),
-      level: this.gameState.level
+      level: this.gameState.level,
     });
 
     // 履歴サイズ制限（最新1000件）
@@ -406,7 +410,7 @@ export default class ScoreManager {
       fromLevel,
       toLevel,
       totalLines,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
     // 履歴サイズ制限（最新100件）
@@ -440,27 +444,31 @@ export default class ScoreManager {
       return {
         averageScorePerLine: 0,
         tetrisRatio: 0,
-        scorePerMinute: 0
+        scorePerMinute: 0,
       };
     }
 
     const lineScores = this.scoreHistory.filter(entry => entry.type === 'line');
     const totalLineScore = lineScores.reduce((sum, entry) => sum + entry.score, 0);
-    const totalLines = lineScores.reduce((sum, entry) => sum + (entry.metadata.linesCleared || 0), 0);
+    const totalLines = lineScores.reduce(
+      (sum, entry) => sum + (entry.metadata.linesCleared || 0),
+      0
+    );
 
     const tetrisCount = lineScores.filter(entry => entry.metadata.type === 'tetris').length;
     const tetrisRatio = lineScores.length > 0 ? tetrisCount / lineScores.length : 0;
 
-    const timespan = this.scoreHistory.length > 1 
-      ? this.scoreHistory[this.scoreHistory.length - 1].timestamp - this.scoreHistory[0].timestamp
-      : 1;
+    const timespan =
+      this.scoreHistory.length > 1
+        ? this.scoreHistory[this.scoreHistory.length - 1].timestamp - this.scoreHistory[0].timestamp
+        : 1;
     const totalScore = this.scoreHistory.reduce((sum, entry) => sum + entry.score, 0);
     const scorePerMinute = (totalScore / timespan) * 60000; // ms to minutes
 
     return {
       averageScorePerLine: totalLines > 0 ? totalLineScore / totalLines : 0,
       tetrisRatio,
-      scorePerMinute: Math.max(scorePerMinute, 0)
+      scorePerMinute: Math.max(scorePerMinute, 0),
     };
   }
 
@@ -489,7 +497,7 @@ export default class ScoreManager {
       levelMultiplier: this.gameState.level,
       totalScore: score * this.gameState.level,
       lineType: type,
-      linesCleared: 0
+      linesCleared: 0,
     };
   }
 
@@ -505,7 +513,7 @@ export default class ScoreManager {
       baseScore: score,
       totalScore: score,
       dropType: type,
-      distance: 0
+      distance: 0,
     };
   }
 
@@ -521,7 +529,7 @@ export default class ScoreManager {
       comboLevel: combo,
       bonusScore: bonus,
       levelMultiplier: this.gameState.level,
-      totalScore: bonus * this.gameState.level
+      totalScore: bonus * this.gameState.level,
     };
   }
 
@@ -540,7 +548,7 @@ export default class ScoreManager {
       totalScore: score * this.gameState.level,
       tSpinType: type,
       linesCleared: lines,
-      isMini: false
+      isMini: false,
     };
   }
 
@@ -557,7 +565,7 @@ export default class ScoreManager {
       bonusScore: bonus,
       multiplier: 0,
       linesCleared: lines,
-      levelMultiplier: this.gameState.level
+      levelMultiplier: this.gameState.level,
     };
   }
 
@@ -575,7 +583,7 @@ export default class ScoreManager {
       currentLevel: level,
       newLevel: level,
       linesForNext: lines,
-      totalLines: 0
+      totalLines: 0,
     };
   }
 

@@ -5,6 +5,8 @@
   "main": "src/presentation/main.js",
   "scripts": {
     "test": "jest",
+    "test:fast": "jest --testPathIgnorePatterns=tests/performance/",
+    "test:performance": "jest --config jest.performance.config.js",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "dev": "webpack serve --mode development",

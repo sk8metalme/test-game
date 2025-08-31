@@ -1,0 +1,1 @@
+@manager-agent 各種エージェントと協力し、$ARGUMENTS
