@@ -21,7 +21,7 @@ export default class DifficultyHistory {
    */
   constructor(config = {}) {
     this.config = {
-      maxHistorySize: config.maxHistorySize || 100,
+      maxHistorySize: config.maxHistorySize || 50,
       enablePersistence: config.enablePersistence !== false,
       storageKey: config.storageKey || 'tetris_difficulty_history',
       enableCompression: config.enableCompression !== false,

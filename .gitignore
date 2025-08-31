@@ -47,3 +47,7 @@ pids
 # Temporary files
 *.tmp
 *.temp
+
+# Claude
+docs/context.md
+docs/plan.md
