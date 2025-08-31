@@ -521,44 +521,65 @@ describe('Game State Integration Tests', () => {
   });
 
   describe('ボード状態の統合管理', () => {
-    const gameState = new GameState();
+    let gameState, board;
 
-    // ボードの状態変更
-    gameState.board.setCell(0, 0, 1);
-    gameState.board.setCell(0, 1, 1);
+    beforeEach(() => {
+      gameState = new GameState();
+      board = new Board();
+      gameState.setBoard(board);
+    });
 
-    // 状態の整合性確認
-    expect(gameState.board.getCell(0, 0)).toBe(1);
-    expect(gameState.board.getCell(0, 1)).toBe(1);
+    test('ボードの状態変更と統合', () => {
+      // ボードの状態変更
+      gameState.board.setCell(0, 0, 1);
+      gameState.board.setCell(0, 1, 1);
 
-    // 統計情報の更新確認
-    const stats = gameState.board.getStatistics();
-    expect(stats.filledCells).toBe(2);
+      // 状態の整合性確認
+      expect(gameState.board.getCell(0, 0)).toBe(1);
+      expect(gameState.board.getCell(0, 1)).toBe(1);
+
+      // 統計情報の更新確認
+      const stats = gameState.board.getStatistics();
+      expect(stats.filledCells).toBe(2);
+    });
   });
 
   describe('テトロミノ状態の統合管理', () => {
-    const gameState = new GameState();
+    let gameState;
 
-    // テトロミノの状態変更
-    gameState.currentPiece = new Tetromino('T', { x: 4, y: 0 });
+    beforeEach(() => {
+      gameState = new GameState();
+    });
 
-    // 状態の整合性確認
-    expect(gameState.currentPiece.type).toBe('T');
-    expect(gameState.currentPiece.position.x).toBe(4);
-    expect(gameState.currentPiece.position.y).toBe(0);
+    test('テトロミノの状態変更と統合', () => {
+      // テトロミノの状態変更
+      const tetromino = new Tetromino('T', { x: 4, y: 0 });
+      gameState.setCurrentPiece(tetromino);
+
+      // 状態の整合性確認
+      expect(gameState.currentPiece.type).toBe('T');
+      expect(gameState.currentPiece.position.x).toBe(4);
+      expect(gameState.currentPiece.position.y).toBe(0);
+    });
   });
 
   describe('ゲーム状態の統合管理', () => {
-    const gameState = new GameState();
+    let gameState;
 
-    // ゲーム状態の変更
-    gameState.score = 1000;
-    gameState.level = 3;
-    gameState.linesCleared = 25;
+    beforeEach(() => {
+      gameState = new GameState();
+    });
 
-    // 状態の整合性確認
-    expect(gameState.score).toBe(1000);
-    expect(gameState.level).toBe(3);
-    expect(gameState.linesCleared).toBe(25);
+    test('ゲーム状態の変更と統合', () => {
+      // ゲーム状態の変更
+      gameState.updateScore(1000);
+      gameState.setLevel(3);
+      gameState.updateLines(25);
+
+      // 状態の整合性確認
+      expect(gameState.score).toBe(1000);
+      expect(gameState.level).toBe(3);
+      expect(gameState.lines).toBe(25);
+    });
   });
 });

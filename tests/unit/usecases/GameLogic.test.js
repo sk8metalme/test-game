@@ -153,14 +153,34 @@ describe('GameLogic', () => {
       // 回転できない状況を作成
       const piece = gameLogic.getCurrentPiece();
 
-      // 周囲をブロックで囲む
-      for (let dy = -1; dy <= 1; dy++) {
-        for (let dx = -1; dx <= 1; dx++) {
-          if (dx !== 0 || dy !== 0) {
-            const checkX = piece.position.x + dx;
-            const checkY = piece.position.y + dy;
-            if (checkX >= 0 && checkX < 10 && checkY >= 0 && checkY < 20) {
-              board.setCell(checkY, checkX, 1);
+      // ピースの占有セルを取得
+      const occupiedCells = piece.getOccupiedCells();
+
+      // 各占有セルの周囲をブロックで囲む
+      for (const cell of occupiedCells) {
+        let dx, dy;
+        if (Array.isArray(cell)) {
+          [dx, dy] = cell;
+        } else if (cell && typeof cell === 'object') {
+          dx = cell.col;
+          dy = cell.row;
+        } else {
+          continue;
+        }
+
+        const cellX = piece.position.x + dx;
+        const cellY = piece.position.y + dy;
+
+        // 周囲8方向にブロックを配置
+        for (let offsetY = -1; offsetY <= 1; offsetY++) {
+          for (let offsetX = -1; offsetX <= 1; offsetX++) {
+            if (offsetX === 0 && offsetY === 0) continue;
+
+            const blockX = cellX + offsetX;
+            const blockY = cellY + offsetY;
+
+            if (blockX >= 0 && blockX < 10 && blockY >= 0 && blockY < 20) {
+              board.setCell(blockY, blockX, 1);
             }
           }
         }
