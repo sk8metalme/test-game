@@ -1,277 +1,283 @@
-# パーティクルシステム詳細設計書
+# ParticleSystem 設計ドキュメント
 
-## 📋 概要
-テトリスゲームに視覚的な魅力を追加するパーティクルシステムの詳細設計です。既存のObjectPoolとOptimizedRendererを活用して、60FPSを維持しながら美しいエフェクトを提供します。
+## 🎯 概要
 
-## 🏗️ アーキテクチャ設計
+`ParticleSystem`は、パーティクルシステム全体を統合するアプリケーション層のクラスです。全コンポーネントの管理、ライフサイクル制御、パフォーマンス監視を提供し、ゲームエンジンとパーティクルシステムの橋渡しを担います。
 
-### レイヤー構成
+## 🏗️ アーキテクチャ
+
+### クラス階層
 ```
-Application Layer (Use Cases)
-├── ParticleSystem
-├── ParticleEmitter
-└── ParticleEffect
-
-Entity Layer
-└── Particle
-
-Infrastructure Layer
-├── ParticleRenderer
-└── ParticlePool (ObjectPool拡張)
+ParticleSystem (Application Layer)
+├── ParticlePool (Use Case) - パーティクル管理
+├── ParticleEmitter (Use Case) - パーティクル発射
+├── ParticleEffect (Use Case) - エフェクト管理
+└── ParticleRenderer (Infrastructure) - 描画処理
 ```
 
-### クラス設計
+### 依存関係
+- **ParticlePool**: パーティクルの生成・管理
+- **ParticleEmitter**: パーティクルの発射制御
+- **ParticleEffect**: エフェクトの統合管理
+- **ParticleRenderer**: パーティクルの描画
+- **EventEmitter**: イベント通知
 
-#### 1. Particle (Entity)
-```javascript
-class Particle {
-  constructor(config) {
-    this.id = generateUniqueId();
-    this.position = { x: 0, y: 0 };
-    this.velocity = { x: 0, y: 0 };
-    this.acceleration = { x: 0, y: 0 };
-    this.life = 1.0; // 0.0 - 1.0
-    this.maxLife = 1000; // ミリ秒
-    this.size = 2;
-    this.color = '#ffffff';
-    this.alpha = 1.0;
-    this.rotation = 0;
-    this.rotationSpeed = 0;
-    this.gravity = 0.1;
-    this.friction = 0.98;
-  }
-  
-  update(deltaTime) { /* パーティクルの状態更新 */ }
-  isDead() { return this.life <= 0; }
-  reset() { /* パーティクルのリセット */ }
-}
-```
+## 🔧 クラス定義
 
-#### 2. ParticleSystem (Use Case)
+### プロパティ
 ```javascript
 class ParticleSystem {
-  constructor() {
-    this.particles = new ParticlePool();
-    this.emitters = new Map();
-    this.effects = new Map();
-    this.activeParticles = new Set();
-    this.eventListeners = {};
+  // 基本設定
+  name: string                    // システム名
+  enabled: boolean               // 有効/無効フラグ
+  maxEffects: number            // 最大エフェクト数
+  
+  // ライフサイクル状態
+  isRunning: boolean            // 実行中フラグ
+  isPaused: boolean             // 一時停止フラグ
+  startTime: number             // 開始時刻
+  totalRunTime: number          // 総実行時間
+  
+  // コンポーネント管理
+  particlePool: ParticlePool    // パーティクルプール
+  renderer: ParticleRenderer    // レンダラー
+  effects: Map<string, ParticleEffect>  // エフェクト管理
+  
+  // パフォーマンス監視
+  stats: {
+    totalParticles: number      // 総パーティクル数
+    activeEffects: number       // アクティブエフェクト数
+    fps: number                 // 現在のFPS
+    memoryUsage: number         // メモリ使用量
+    lastUpdateTime: number      // 最後の更新時刻
   }
   
-  createParticle(config) { /* パーティクルの作成 */ }
-  addEmitter(name, emitter) { /* エミッターの追加 */ }
-  addEffect(name, effect) { /* エフェクトの追加 */ }
-  emit(name, position, count) { /* パーティクルの発射 */ }
-  update(deltaTime) { /* システム全体の更新 */ }
-  render(context) { /* レンダリング */ }
-  clear() { /* 全パーティクルのクリア */ }
+  // 設定
+  config: {
+    maxParticles: number        // 最大パーティクル数
+    targetFPS: number          // 目標FPS
+    enableOptimization: boolean // 最適化有効フラグ
+    cleanupInterval: number     // クリーンアップ間隔
+  }
 }
 ```
 
-#### 3. ParticleEmitter (Use Case)
+### メソッド
+
+#### ライフサイクル管理
 ```javascript
-class ParticleEmitter {
-  constructor(config) {
-    this.name = config.name;
-    this.particleConfig = config.particleConfig;
-    this.emissionRate = config.emissionRate || 10; // パーティクル/秒
-    this.burstCount = config.burstCount || 1;
-    this.duration = config.duration || -1; // -1 = 無限
-    this.active = true;
+// システム制御
+start(): void                   // システム開始
+stop(): void                    // システム停止
+pause(): void                   // 一時停止
+resume(): void                  // 再開
+restart(): void                 // 再起動
+
+// 状態確認
+isActive(): boolean             // アクティブ状態確認
+getStatus(): string             // 現在の状態取得
+```
+
+#### エフェクト管理
+```javascript
+// エフェクト操作
+addEffect(effect: ParticleEffect): boolean     // エフェクト追加
+removeEffect(effectName: string): boolean      // エフェクト削除
+getEffect(effectName: string): ParticleEffect  // エフェクト取得
+getAllEffects(): ParticleEffect[]               // 全エフェクト取得
+clearEffects(): void                           // 全エフェクト削除
+
+// エフェクト制御
+playEffect(effectName: string): boolean        // エフェクト再生
+stopEffect(effectName: string): boolean        // エフェクト停止
+pauseEffect(effectName: string): boolean       // エフェクト一時停止
+```
+
+#### システム更新
+```javascript
+// メインループ
+update(deltaTime: number): void               // システム更新
+render(): void                               // 描画実行
+
+// 最適化
+optimizeSystem(): void                       // システム最適化
+cleanup(): void                              // クリーンアップ実行
+```
+
+#### 統計・監視
+```javascript
+// 統計情報
+getSystemStats(): object                     // システム統計取得
+getPerformanceMetrics(): object              // パフォーマンス指標取得
+getMemoryUsage(): object                     // メモリ使用量取得
+
+// 監視
+startMonitoring(): void                      // 監視開始
+stopMonitoring(): void                       // 監視停止
+```
+
+#### 設定管理
+```javascript
+// 設定操作
+updateConfig(newConfig: object): void        // 設定更新
+getConfig(): object                          // 設定取得
+resetConfig(): void                          // 設定リセット
+```
+
+## 🔄 ライフサイクル
+
+### 状態遷移
+```
+[初期化] → [停止] → [開始] → [実行中] → [一時停止] → [実行中] → [停止] → [終了]
+    ↓         ↓        ↓         ↓           ↓           ↓        ↓        ↓
+  new()    start()   update()  pause()    resume()   update()  stop()   destroy()
+```
+
+### 更新ループ
+```javascript
+while (isRunning && !isPaused) {
+  const deltaTime = getDeltaTime();
+  
+  // 1. エフェクト更新
+  updateEffects(deltaTime);
+  
+  // 2. パーティクル更新
+  updateParticles(deltaTime);
+  
+  // 3. 描画実行
+  render();
+  
+  // 4. 統計更新
+  updateStats();
+  
+  // 5. 最適化チェック
+  if (shouldOptimize()) {
+    optimizeSystem();
   }
   
-  emit(position, count) { /* パーティクルの発射 */ }
-  update(deltaTime) { /* エミッターの更新 */ }
-  isActive() { return this.active; }
+  // 6. クリーンアップ
+  if (shouldCleanup()) {
+    cleanup();
+  }
 }
 ```
 
-#### 4. ParticleEffect (Use Case)
+## 📊 パフォーマンス最適化
+
+### 最適化戦略
+1. **フレームレート制御**: 目標FPSに基づく更新頻度調整
+2. **LODシステム**: 距離に基づく描画品質調整
+3. **バッチ処理**: 複数パーティクルの一括描画
+4. **メモリ管理**: オブジェクトプールによる効率的なメモリ使用
+5. **クリーンアップ**: 定期的な不要オブジェクトの削除
+
+### 最適化トリガー
+- パーティクル数が閾値を超えた場合
+- FPSが目標値を下回った場合
+- メモリ使用量が閾値を超えた場合
+- 定期的なクリーンアップ間隔
+
+## 🧪 テスト戦略
+
+### テストカテゴリ
+1. **初期化テスト**: コンストラクタと設定の動作確認
+2. **ライフサイクルテスト**: 開始・停止・一時停止の動作確認
+3. **エフェクト管理テスト**: エフェクトの追加・削除・制御
+4. **統合テスト**: 全コンポーネントとの連携確認
+5. **パフォーマンステスト**: 大量エフェクトでの動作確認
+6. **エラーハンドリングテスト**: 異常系の処理確認
+
+### テストケース例
 ```javascript
-class ParticleEffect {
-  constructor(config) {
-    this.name = config.name;
-    this.emitters = config.emitters || [];
-    this.duration = config.duration || 1000;
-    this.loop = config.loop || false;
-    this.active = false;
-    this.startTime = 0;
-  }
+describe('ParticleSystem', () => {
+  describe('初期化', () => {
+    test('正常な設定でシステムが作成される', () => {});
+    test('無効な設定値は適切に処理される', () => {});
+  });
   
-  start(position) { /* エフェクトの開始 */ }
-  stop() { /* エフェクトの停止 */ }
-  update(deltaTime) { /* エフェクトの更新 */ }
-  isActive() { return this.active; }
+  describe('ライフサイクル管理', () => {
+    test('システムが正しく開始される', () => {});
+    test('システムが正しく停止される', () => {});
+    test('一時停止と再開が正しく動作する', () => {});
+  });
+  
+  describe('エフェクト管理', () => {
+    test('エフェクトが正しく追加される', () => {});
+    test('エフェクトが正しく削除される', () => {});
+    test('複数エフェクトが同時実行される', () => {});
+  });
+  
+  describe('統合テスト', () => {
+    test('全コンポーネントが正しく連携する', () => {});
+    test('大量パーティクルでの安定動作', () => {});
+  });
+});
+```
+
+## 🎮 使用例
+
+### 基本的な使用例
+```javascript
+// システム作成
+const particleSystem = new ParticleSystem({
+  maxParticles: 1000,
+  targetFPS: 60,
+  enableOptimization: true
+});
+
+// エフェクト追加
+const explosionEffect = new ParticleEffect({
+  name: 'explosion',
+  duration: 2000,
+  loop: false
+});
+
+particleSystem.addEffect(explosionEffect);
+
+// システム開始
+particleSystem.start();
+
+// エフェクト再生
+particleSystem.playEffect('explosion');
+
+// ゲームループ内で更新
+function gameLoop() {
+  const deltaTime = 16.67; // 60FPS
+  particleSystem.update(deltaTime);
+  particleSystem.render();
+  
+  requestAnimationFrame(gameLoop);
 }
 ```
 
-#### 5. ParticleRenderer (Infrastructure)
+### ゲームイベントとの連携
 ```javascript
-class ParticleRenderer {
-  constructor(canvas, config) {
-    this.canvas = canvas;
-    this.context = canvas.getContext('2d');
-    this.config = config;
-    this.batchSize = config.batchSize || 100;
-  }
-  
-  render(particles) { /* パーティクルの一括描画 */ }
-  renderParticle(particle) { /* 個別パーティクルの描画 */ }
-  setBlendMode(mode) { /* ブレンドモードの設定 */ }
-}
+// ライン削除時のエフェクト
+gameState.on('lineCleared', (lines) => {
+  const lineEffect = createLineClearEffect(lines);
+  particleSystem.addEffect(lineEffect);
+  particleSystem.playEffect(lineEffect.name);
+});
+
+// T-Spin時のエフェクト
+gameState.on('tSpin', () => {
+  const tSpinEffect = createTSpinEffect();
+  particleSystem.addEffect(tSpinEffect);
+  particleSystem.playEffect(tSpinEffect.name);
+});
 ```
 
-#### 6. ParticlePool (ObjectPool拡張)
-```javascript
-class ParticlePool extends ObjectPool {
-  constructor(config) {
-    super(config);
-    this.particleClass = Particle;
-    this.maxSize = config.maxSize || 1000;
-  }
-  
-  createParticle() { /* パーティクルの作成 */ }
-  resetParticle(particle) { /* パーティクルのリセット */ }
-  getActiveCount() { /* アクティブなパーティクル数 */ }
-}
-```
+## 🔮 将来の拡張
 
-## 🎮 エフェクト設計
+### 計画されている機能
+1. **エフェクトテンプレート**: 事前定義されたエフェクトの再利用
+2. **パーティクルシェーダー**: WebGLシェーダーによる高度な描画
+3. **物理シミュレーション**: より現実的な物理演算
+4. **音響連携**: パーティクルエフェクトと音の同期
+5. **VR/AR対応**: 3D空間でのパーティクル表示
 
-### 1. ライン削除エフェクト
-```javascript
-const lineClearEffect = {
-  name: 'lineClear',
-  emitters: [
-    {
-      name: 'explosion',
-      particleConfig: {
-        velocity: { x: [-2, 2], y: [-3, -1] },
-        size: [3, 6],
-        color: ['#ff6b6b', '#4ecdc4', '#45b7d1'],
-        life: [800, 1200]
-      },
-      emissionRate: 20,
-      burstCount: 50,
-      duration: 500
-    }
-  ],
-  duration: 1000
-};
-```
-
-### 2. T-Spinエフェクト
-```javascript
-const tSpinEffect = {
-  name: 'tSpin',
-  emitters: [
-    {
-      name: 'sparkle',
-      particleConfig: {
-        velocity: { x: [-1, 1], y: [-2, 0] },
-        size: [2, 4],
-        color: ['#ffd700', '#ffed4e', '#fff'],
-        life: [600, 1000],
-        rotationSpeed: [-0.1, 0.1]
-      },
-      emissionRate: 15,
-      burstCount: 30,
-      duration: 800
-    }
-  ],
-  duration: 1200
-};
-```
-
-### 3. Perfect Clearエフェクト
-```javascript
-const perfectClearEffect = {
-  name: 'perfectClear',
-  emitters: [
-    {
-      name: 'celebration',
-      particleConfig: {
-        velocity: { x: [-3, 3], y: [-4, -2] },
-        size: [4, 8],
-        color: ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57'],
-        life: [1500, 2000],
-        gravity: 0.05
-      },
-      emissionRate: 25,
-      burstCount: 100,
-      duration: 1000
-    }
-  ],
-  duration: 2000
-};
-```
-
-## 🔧 パフォーマンス最適化
-
-### 1. ObjectPool活用
-- パーティクルの生成・破棄を最小限に抑制
-- メモリ割り当ての最適化
-- ガベージコレクションの圧力軽減
-
-### 2. バッチ描画
-- 複数パーティクルを一括描画
-- Canvas APIの最適化
-- GPU描画の効率化
-
-### 3. LODシステム
-- 距離に応じたパーティクル数の調整
-- 画面外パーティクルの描画スキップ
-- パフォーマンス設定の動的調整
-
-### 4. パーティクル制限
-- 最大パーティクル数の制限
-- 重要度に基づく描画優先度
-- フレームレート監視による自動調整
-
-## 📊 パフォーマンス指標
-
-### 目標値
-- **フレームレート**: 60FPS維持
-- **最大パーティクル数**: 1000個
-- **メモリ使用量**: 100MB以下
-- **描画時間**: 16ms以下
-
-### 監視項目
-- アクティブパーティクル数
-- フレーム描画時間
-- メモリ使用量
-- パーティクル生成・破棄頻度
-
-## 🧪 テスト設計
-
-### 1. 単体テスト
-- Particleクラスの動作確認
-- ParticleSystemの基本機能
-- エミッター・エフェクトの動作
-
-### 2. 統合テスト
-- ObjectPoolとの連携
-- OptimizedRendererとの統合
-- ゲームイベントとの連携
-
-### 3. パフォーマンステスト
-- 大量パーティクルでの動作
-- 長時間動作での安定性
-- メモリリークの検出
-
-## 🚀 実装順序
-
-1. **Particleエンティティ**の実装
-2. **ParticlePool**の実装
-3. **ParticleRenderer**の実装
-4. **ParticleEmitter**の実装
-5. **ParticleEffect**の実装
-6. **ParticleSystem**の統合
-7. **テスト**の作成
-8. **パフォーマンス最適化**
-
-## 📚 参考資料
-
-- [Canvas Performance](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas)
-- [Particle System Design](https://gamedev.stackexchange.com/questions/1155/particle-system-design)
-- [Object Pool Pattern](https://en.wikipedia.org/wiki/Object_pool_pattern)
+### パフォーマンス改善
+1. **Web Workers**: バックグラウンドでの計算処理
+2. **WebGL**: GPU加速による描画処理
+3. **インスタンス描画**: 大量パーティクルの効率的描画
+4. **空間分割**: 視界内パーティクルのみ描画
