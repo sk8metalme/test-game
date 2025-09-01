@@ -1,6 +1,7 @@
 import ParticleSystem from './ParticleSystem.js';
 import LineClearEffect from './LineClearEffect.js';
 import TSpinEffect from './TSpinEffect.js';
+import PerfectClearEffect from './PerfectClearEffect.js';
 
 /**
  * エフェクト管理システム
@@ -67,8 +68,10 @@ export default class EffectManager {
     // T-Spinエフェクト
     this.effects.set('t-spin', TSpinEffect);
 
+    // Perfect Clearエフェクト
+    this.effects.set('perfect-clear', PerfectClearEffect);
+
     // その他のエフェクトは後で追加
-    // this.effects.set('perfect-clear', PerfectClearEffect);
     // this.effects.set('level-up', LevelUpEffect);
     // this.effects.set('game-over', GameOverEffect);
   }

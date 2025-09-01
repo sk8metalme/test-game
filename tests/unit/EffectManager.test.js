@@ -74,6 +74,7 @@ describe('EffectManager', () => {
     test('デフォルトエフェクトが登録されている', () => {
       expect(effectManager.effects.has('line-clear')).toBe(true);
       expect(effectManager.effects.has('t-spin')).toBe(true);
+      expect(effectManager.effects.has('perfect-clear')).toBe(true);
     });
 
     test('エフェクトを登録できる', () => {
@@ -107,6 +108,16 @@ describe('EffectManager', () => {
       const result = effectManager.playEffect('t-spin', {
         position: { x: 300, y: 400 },
         spinType: 'double',
+      });
+
+      expect(result).toBe(true);
+      expect(effectManager.activeEffects.size).toBe(1);
+    });
+
+    test('Perfect Clearエフェクトを再生できる', () => {
+      const result = effectManager.playEffect('perfect-clear', {
+        position: { x: 400, y: 300 },
+        intensity: 2.0,
       });
 
       expect(result).toBe(true);
@@ -325,7 +336,7 @@ describe('EffectManager', () => {
       const str = effectManager.toString();
 
       expect(str).toContain('EffectManager');
-      expect(str).toContain('2'); // registered effects
+      expect(str).toContain('3'); // registered effects
       expect(str).toContain('1'); // active effects
       expect(str).toContain('0'); // queued effects
     });
