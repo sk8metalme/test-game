@@ -166,9 +166,9 @@ describe('ParticlePool', () => {
       const mockParticle = new Particle();
       mockParticle.isActive = jest.fn().mockReturnValue(true);
 
-      // プールの状態をモック
-      particlePool.pool = [mockParticle];
-      particlePool.activeCount = 1;
+      // _activeParticlesセットに直接追加
+      particlePool._activeParticles.add(mockParticle);
+      particlePool._arrayDirty = true;
 
       const result = particlePool.getActiveParticles();
 

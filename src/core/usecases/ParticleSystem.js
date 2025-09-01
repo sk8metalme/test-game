@@ -423,7 +423,7 @@ export default class ParticleSystem {
       totalRunTime: this.totalRunTime,
       status: this.getStatus(),
       effectCount: this.effects.size,
-      poolStats: this.particlePool.getStats(),
+      poolStats: this.particlePool.getPoolStats(),
       rendererStats: this.renderer.getStats(),
     };
   }
@@ -580,7 +580,7 @@ export default class ParticleSystem {
    * 統計を更新する
    */
   _updateStats() {
-    const poolStats = this.particlePool.getStats();
+    const poolStats = this.particlePool.getPoolStats();
 
     this.stats.totalParticles = poolStats.activeCount;
     this.stats.activeEffects = Array.from(this.effects.values()).filter(
