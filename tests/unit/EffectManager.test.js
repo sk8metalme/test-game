@@ -1,6 +1,7 @@
 import EffectManager from '../../src/core/usecases/EffectManager.js';
 import LineClearEffect from '../../src/core/usecases/LineClearEffect.js';
 import TSpinEffect from '../../src/core/usecases/TSpinEffect.js';
+import LevelUpEffect from '../../src/core/usecases/LevelUpEffect.js';
 
 // モックCanvasの作成
 const createMockCanvas = () => {
@@ -55,7 +56,7 @@ describe('EffectManager', () => {
       expect(manager.canvas).toBe(mockCanvas);
       expect(manager.config.maxConcurrentEffects).toBe(10);
       expect(manager.config.enableEffects).toBe(true);
-      expect(manager.effects.size).toBeGreaterThan(0);
+      expect(manager.effects.size).toBe(4); // line-clear, t-spin, perfect-clear, level-up
       expect(manager.activeEffects.size).toBe(0);
       expect(manager.effectQueue.length).toBe(0);
     });
@@ -118,6 +119,16 @@ describe('EffectManager', () => {
       const result = effectManager.playEffect('perfect-clear', {
         position: { x: 400, y: 300 },
         intensity: 2.0,
+      });
+
+      expect(result).toBe(true);
+      expect(effectManager.activeEffects.size).toBe(1);
+    });
+
+    test('レベルアップエフェクトを再生できる', () => {
+      const result = effectManager.playEffect('level-up', {
+        position: { x: 400, y: 300 },
+        intensity: 1.0,
       });
 
       expect(result).toBe(true);
@@ -336,7 +347,7 @@ describe('EffectManager', () => {
       const str = effectManager.toString();
 
       expect(str).toContain('EffectManager');
-      expect(str).toContain('3'); // registered effects
+      expect(str).toContain('4'); // registered effects
       expect(str).toContain('1'); // active effects
       expect(str).toContain('0'); // queued effects
     });
