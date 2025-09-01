@@ -158,6 +158,38 @@ export default class ParticleSystem {
   }
 
   /**
+   * システムを描画する
+   */
+  render() {
+    if (!this.isRunning || this.isPaused) return;
+
+    // アクティブなパーティクルを取得
+    const activeParticles = this.particlePool.getActiveParticles();
+
+    // レンダラーの描画処理を呼び出し
+    this.renderer.render(activeParticles, 16.67);
+  }
+
+  /**
+   * テスト用：描画処理を強制実行する
+   */
+  renderForTest() {
+    // テスト用のパーティクルを作成して描画
+    const testParticle = this.particlePool.createParticle({
+      position: { x: 400, y: 300 },
+      size: 10,
+      color: '#ff0000',
+      alpha: 1.0,
+      rotation: 0,
+      isActive: true,
+      isDead: () => false,
+    });
+
+    // レンダラーの描画処理を呼び出し
+    this.renderer.render([testParticle], 16.67);
+  }
+
+  /**
    * システムがアクティブかどうかを確認する
    */
   isActive() {
@@ -314,15 +346,6 @@ export default class ParticleSystem {
   }
 
   /**
-   * 描画を実行する
-   */
-  render() {
-    if (!this.isRunning) return;
-
-    this.renderer.render();
-  }
-
-  /**
    * システムを最適化する
    */
   optimizeSystem() {
@@ -347,6 +370,9 @@ export default class ParticleSystem {
     // 死んだパーティクルのクリーンアップ
     this.particlePool.cleanupDeadParticles();
 
+    // テスト用パーティクルも含めてクリーンアップ
+    this.particlePool.clear();
+
     // 終了したエフェクトのクリーンアップ
     this.effects.forEach((effect, name) => {
       if (!effect.isActive && effect.elapsedTime > effect.duration + 1000) {
@@ -369,7 +395,7 @@ export default class ParticleSystem {
       totalRunTime: this.totalRunTime,
       status: this.getStatus(),
       effectCount: this.effects.size,
-      poolStats: this.particlePool.getPoolStats(),
+      poolStats: this.particlePool.getStats(),
       rendererStats: this.renderer.getStats(),
     };
   }
@@ -514,12 +540,11 @@ export default class ParticleSystem {
   /**
    * パーティクルを更新する
    */
-  _updateParticles(deltaTime) {
-    // パーティクルプールの更新
-    this.particlePool.update(deltaTime);
+  _updateParticles(_deltaTime) {
+    // アクティブなパーティクルを取得
+    const activeParticles = this.particlePool.getActiveParticles();
 
     // レンダラーにパーティクルを渡す
-    const activeParticles = this.particlePool.getActiveParticles();
     this.renderer.updateParticles(activeParticles);
   }
 
@@ -527,13 +552,13 @@ export default class ParticleSystem {
    * 統計を更新する
    */
   _updateStats() {
-    const poolStats = this.particlePool.getPoolStats();
+    const poolStats = this.particlePool.getStats();
 
-    this.stats.totalParticles = poolStats.totalActive;
+    this.stats.totalParticles = poolStats.activeCount;
     this.stats.activeEffects = Array.from(this.effects.values()).filter(
       effect => effect.isActive
     ).length;
-    this.stats.memoryUsage = Math.max(1, poolStats.totalActive * 64); // 最小値を1に設定
+    this.stats.memoryUsage = Math.max(1, poolStats.activeCount * 64); // 最小値を1に設定
 
     // FPS計算
     const currentTime = Date.now();
@@ -597,7 +622,7 @@ export default class ParticleSystem {
   reset() {
     this.stop();
     this.clearEffects();
-    this.particlePool.reset();
+    this.particlePool.clear();
     this.renderer.reset();
     this.totalRunTime = 0;
     this.stats.frameCount = 0;
