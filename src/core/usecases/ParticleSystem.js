@@ -1,5 +1,6 @@
 import ParticlePool from './ParticlePool';
 import ParticleRenderer from './ParticleRenderer';
+// import PerformanceMonitor from './PerformanceMonitor';
 
 /**
  * パーティクルシステム全体を統合するアプリケーション層のクラス
@@ -73,6 +74,15 @@ export default class ParticleSystem {
     this._lastCleanupTime = Date.now();
     this._frameTimeHistory = [];
     this._memoryHistory = [];
+
+    // パフォーマンス監視との統合
+    this.performanceMonitor = config.performanceMonitor || null;
+    this._performanceMetrics = {
+      updateTime: 0,
+      renderTime: 0,
+      particleCount: 0,
+      effectCount: 0,
+    };
   }
 
   // ==================== ライフサイクル管理 ====================
@@ -163,11 +173,17 @@ export default class ParticleSystem {
   render() {
     if (!this.isRunning || this.isPaused) return;
 
+    const renderStartTime = performance.now();
+
     // アクティブなパーティクルを取得
     const activeParticles = this.particlePool.getActiveParticles();
 
     // レンダラーの描画処理を呼び出し
     this.renderer.render(activeParticles, 16.67);
+
+    // 描画時間の記録
+    const renderEndTime = performance.now();
+    this._performanceMetrics.renderTime = renderEndTime - renderStartTime;
   }
 
   /**
@@ -318,6 +334,7 @@ export default class ParticleSystem {
   update(deltaTime) {
     if (!this.isRunning || this.isPaused) return;
 
+    const updateStartTime = performance.now();
     const currentTime = Date.now();
 
     // エフェクトの更新
@@ -337,6 +354,17 @@ export default class ParticleSystem {
     // クリーンアップチェック
     if (this._shouldCleanup()) {
       this.cleanup();
+    }
+
+    // パフォーマンス監視との統合
+    const updateEndTime = performance.now();
+    this._performanceMetrics.updateTime = updateEndTime - updateStartTime;
+    this._performanceMetrics.particleCount = this.stats.totalParticles;
+    this._performanceMetrics.effectCount = this.effects.size;
+
+    // PerformanceMonitorにメトリクスを送信
+    if (this.performanceMonitor) {
+      this._reportPerformanceMetrics();
     }
 
     // 時間の更新
@@ -558,7 +586,9 @@ export default class ParticleSystem {
     this.stats.activeEffects = Array.from(this.effects.values()).filter(
       effect => effect.isActive
     ).length;
-    this.stats.memoryUsage = Math.max(1, poolStats.activeCount * 64); // 最小値を1に設定
+
+    // 正確なメモリ使用量計算
+    this.stats.memoryUsage = this._calculateMemoryUsage(poolStats);
 
     // FPS計算
     const currentTime = Date.now();
@@ -584,12 +614,66 @@ export default class ParticleSystem {
   }
 
   /**
+   * 正確なメモリ使用量を計算する
+   */
+  _calculateMemoryUsage(poolStats) {
+    // パーティクルオブジェクトの実際のメモリ使用量を計算
+    const particleMemory = this._estimateParticleMemory();
+    const activeParticleMemory = poolStats.activeCount * particleMemory;
+
+    // プール自体のメモリ使用量
+    const poolMemory = poolStats.totalCreated * particleMemory;
+
+    // エフェクトのメモリ使用量（概算）
+    const effectMemory = this.effects.size * 1024; // 1KB per effect
+
+    // システム自体のメモリ使用量
+    const systemMemory = 2048; // 2KB for system overhead
+
+    const totalMemory = activeParticleMemory + poolMemory + effectMemory + systemMemory;
+
+    // 最小値を1に設定（0除算を防ぐ）
+    return Math.max(1, totalMemory);
+  }
+
+  /**
+   * パーティクルオブジェクトのメモリ使用量を推定する
+   */
+  _estimateParticleMemory() {
+    // パーティクルオブジェクトのプロパティサイズを計算
+    const properties = {
+      position: 16, // {x, y} objects
+      velocity: 16, // {x, y} objects
+      acceleration: 16, // {x, y} objects
+      gravity: 8, // number
+      friction: 8, // number
+      life: 8, // number
+      maxLife: 8, // number
+      size: 8, // number
+      color: 16, // string (average)
+      alpha: 8, // number
+      rotation: 8, // number
+      rotationSpeed: 8, // number
+      isActive: 1, // boolean
+      isDead: 8, // function reference
+    };
+
+    // オブジェクトのオーバーヘッド（プロパティ名、プロトタイプチェーンなど）
+    const objectOverhead = 64;
+
+    const totalPropertySize = Object.values(properties).reduce((sum, size) => sum + size, 0);
+
+    return totalPropertySize + objectOverhead;
+  }
+
+  /**
    * 最適化が必要かどうかを判定する
    */
   _shouldOptimize() {
     return (
       this.stats.totalParticles > this.config.maxParticles * 0.8 ||
-      this.stats.fps < this.config.targetFPS * 0.8
+      this.stats.fps < this.config.targetFPS * 0.8 ||
+      this.stats.memoryUsage > this.config.maxParticles * 128 // メモリ使用量チェック
     );
   }
 
@@ -598,6 +682,69 @@ export default class ParticleSystem {
    */
   _shouldCleanup() {
     return Date.now() - this._lastCleanupTime >= this.config.cleanupInterval;
+  }
+
+  /**
+   * PerformanceMonitorにメトリクスを報告する
+   */
+  _reportPerformanceMetrics() {
+    if (!this.performanceMonitor || typeof this.performanceMonitor.reportMetrics !== 'function') {
+      return;
+    }
+
+    // パーティクルシステム固有のメトリクスを報告
+    this.performanceMonitor.reportMetrics({
+      system: 'ParticleSystem',
+      updateTime: this._performanceMetrics.updateTime,
+      renderTime: this._performanceMetrics.renderTime,
+      particleCount: this._performanceMetrics.particleCount,
+      effectCount: this._performanceMetrics.effectCount,
+      memoryUsage: this.stats.memoryUsage,
+      fps: this.stats.fps,
+    });
+  }
+
+  /**
+   * PerformanceMonitorを設定する
+   */
+  setPerformanceMonitor(monitor) {
+    this.performanceMonitor = monitor;
+  }
+
+  /**
+   * 動的最適化を実行する
+   */
+  applyDynamicOptimization(optimizationLevel) {
+    if (!this.config.enableOptimization) return;
+
+    switch (optimizationLevel) {
+      case 0: // 最高品質
+        this.config.maxParticles = Math.min(2000, this.config.maxParticles * 1.2);
+        this.renderer.enableLOD = false;
+        this.renderer.batchSize = Math.max(50, this.renderer.batchSize * 0.8);
+        break;
+      case 1: // 高品質
+        this.config.maxParticles = Math.min(1500, this.config.maxParticles * 1.1);
+        this.renderer.enableLOD = true;
+        this.renderer.batchSize = Math.max(100, this.renderer.batchSize * 0.9);
+        break;
+      case 2: // 中品質
+        this.config.maxParticles = Math.min(1000, this.config.maxParticles * 0.9);
+        this.renderer.enableLOD = true;
+        this.renderer.batchSize = Math.max(150, this.renderer.batchSize * 1.1);
+        break;
+      case 3: // 低品質
+        this.config.maxParticles = Math.min(500, this.config.maxParticles * 0.8);
+        this.renderer.enableLOD = true;
+        this.renderer.batchSize = Math.max(200, this.renderer.batchSize * 1.2);
+        break;
+      default:
+        break;
+    }
+
+    // 設定の適用
+    this.particlePool.maxSize = this.config.maxParticles;
+    this.renderer.maxParticles = this.config.maxParticles;
   }
 
   // ==================== ユーティリティ ====================

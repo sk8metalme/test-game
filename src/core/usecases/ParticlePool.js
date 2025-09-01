@@ -54,6 +54,11 @@ export default class ParticlePool extends ObjectPool {
     // ライフタイム統計の追跡
     this._lifeTimeSum = 0;
     this._lifeTimeCount = 0;
+
+    // アクティブパーティクルの効率的な追跡
+    this._activeParticles = new Set();
+    this._activeParticleArray = [];
+    this._arrayDirty = false;
   }
 
   /**
@@ -70,6 +75,10 @@ export default class ParticlePool extends ObjectPool {
     if (config && Object.keys(config).length > 0) {
       particle.updateConfig(config);
     }
+
+    // アクティブパーティクルとして登録
+    this._activeParticles.add(particle);
+    this._arrayDirty = true;
 
     // 統計を更新
     this.particleStats.totalEmitted++;
@@ -88,6 +97,10 @@ export default class ParticlePool extends ObjectPool {
    */
   resetParticle(particle) {
     if (!particle) return;
+
+    // アクティブパーティクルから削除
+    this._activeParticles.delete(particle);
+    this._arrayDirty = true;
 
     // ライフタイム統計を更新
     this._updateLifeTimeStats(particle);
@@ -138,25 +151,18 @@ export default class ParticlePool extends ObjectPool {
   /**
    * アクティブなパーティクルのリストを取得
    *
-   * 注意: このメソッドはパフォーマンスに影響する可能性があります。
-   * 必要に応じて使用を制限してください。
+   * 効率的なSetベースの追跡システムを使用して高速にアクティブパーティクルを取得します。
    *
    * @returns {Array} アクティブなパーティクルの配列
    */
   getActiveParticles() {
-    // ObjectPoolの内部状態からアクティブなパーティクルを推定
-    // 実際の実装では、より効率的な方法を使用することを推奨
-    const activeParticles = [];
-
-    // プール内のパーティクルをチェック
-    for (let i = 0; i < this.pool.length; i++) {
-      const particle = this.pool[i];
-      if (particle && particle.isActive && particle.isActive()) {
-        activeParticles.push(particle);
-      }
+    // 配列が古い場合は再構築
+    if (this._arrayDirty) {
+      this._activeParticleArray = Array.from(this._activeParticles);
+      this._arrayDirty = false;
     }
 
-    return activeParticles;
+    return this._activeParticleArray;
   }
 
   /**
@@ -250,6 +256,11 @@ export default class ParticlePool extends ObjectPool {
    */
   clear() {
     super.clear();
+
+    // アクティブパーティクル追跡をクリア
+    this._activeParticles.clear();
+    this._activeParticleArray = [];
+    this._arrayDirty = false;
 
     // パーティクル固有の統計をリセット
     this.particleStats = {
