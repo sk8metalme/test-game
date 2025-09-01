@@ -3,6 +3,7 @@ import LineClearEffect from './LineClearEffect.js';
 import TSpinEffect from './TSpinEffect.js';
 import PerfectClearEffect from './PerfectClearEffect.js';
 import LevelUpEffect from './LevelUpEffect.js';
+import GameOverEffect from './GameOverEffect.js';
 
 /**
  * エフェクト管理システム
@@ -75,8 +76,8 @@ export default class EffectManager {
     // レベルアップエフェクト
     this.effects.set('level-up', LevelUpEffect);
 
-    // その他のエフェクトは後で追加
-    // this.effects.set('game-over', GameOverEffect);
+    // ゲームオーバーエフェクト
+    this.effects.set('game-over', GameOverEffect);
   }
 
   /**
