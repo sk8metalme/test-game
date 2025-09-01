@@ -969,13 +969,20 @@ export class GameState {
 
     // 統計情報をリセット（totalGamesは維持）
     const currentTotalGames = this.statistics.totalGames;
+    const currentHighScore = this.statistics.highScore || 0;
+    const currentBestLevel = this.statistics.bestLevel || 1;
     this.statistics = {
       totalGames: currentTotalGames,
       score: 0,
       lines: 0,
       time: 0,
-      highScore: this.statistics.highScore || 0,
-      bestLevel: this.statistics.bestLevel || 1,
+      highScore: currentHighScore,
+      bestLevel: currentBestLevel,
+      averages: {
+        score: 0,
+        lines: 0,
+        time: 0,
+      },
       pieceUsage: {
         I: 0,
         O: 0,

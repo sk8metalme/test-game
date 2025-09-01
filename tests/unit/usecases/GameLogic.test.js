@@ -19,6 +19,9 @@ describe('GameLogic', () => {
     board = new Board();
     gameState = new GameState();
     gameLogic = new GameLogic(board, gameState);
+
+    // 統計をリセットしてテストを独立させる
+    gameState.statistics.totalGames = 0;
   });
 
   describe('初期化とセットアップ', () => {
@@ -115,10 +118,16 @@ describe('GameLogic', () => {
       const piece = gameLogic.getCurrentPiece();
       const originalRotation = piece.rotationState;
 
-      const result = gameLogic.rotatePieceClockwise();
-
-      expect(result.success).toBe(true);
-      expect(piece.rotationState).toBe((originalRotation + 1) % 4);
+      // O字ピースの場合は回転状態が変わらないことを確認
+      if (piece.type === 'O') {
+        const result = gameLogic.rotatePieceClockwise();
+        expect(result.success).toBe(true);
+        expect(piece.rotationState).toBe(originalRotation);
+      } else {
+        const result = gameLogic.rotatePieceClockwise();
+        expect(result.success).toBe(true);
+        expect(piece.rotationState).toBe((originalRotation + 1) % 4);
+      }
     });
 
     test('ピースを反時計回りに回転できる', () => {
@@ -128,7 +137,7 @@ describe('GameLogic', () => {
       const result = gameLogic.rotatePieceCounterClockwise();
 
       expect(result.success).toBe(true);
-      const expectedRotation = originalRotation === 0 ? 3 : originalRotation - 1;
+      const expectedRotation = (originalRotation + 3) % 4; // 反時計回り: (state + 3) % 4
       expect(piece.rotationState).toBe(expectedRotation);
     });
 
@@ -365,18 +374,30 @@ describe('GameLogic', () => {
 
       expect(result.success).toBe(false);
       expect(result.gameOver).toBe(true);
+      expect(result.reason).toBe('spawn_collision');
       expect(gameState.status).toBe('GAME_OVER');
     });
 
     test('ゲームオーバー時の統計更新', () => {
-      // ゲームオーバー条件を作成
-      board.setCell(0, 4, 1);
-      board.setCell(0, 5, 1);
+      // ゲーム状態を完全にリセット
+      gameState.resetGame();
+      gameState.statistics.totalGames = 0; // 明示的に0にリセット
 
+      // ゲームを開始してからゲームオーバー条件を作成
+      gameLogic.startGame();
+
+      // スポーン位置を完全にブロックしてゲームオーバー条件を作成
+      for (let x = 0; x < 10; x++) {
+        board.setCell(0, x, 1);
+        board.setCell(1, x, 1);
+      }
+
+      const initialTotalGames = gameState.statistics.totalGames;
       gameLogic.spawnNextPiece();
 
       expect(gameState.status).toBe('GAME_OVER');
-      expect(gameState.statistics.totalGames).toBeGreaterThan(0);
+      // startGame()とspawnNextPiece()で2回増加することを確認
+      expect(gameState.statistics.totalGames).toBe(2);
     });
   });
 

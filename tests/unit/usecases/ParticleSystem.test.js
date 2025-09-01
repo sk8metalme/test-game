@@ -4,14 +4,16 @@ jest.mock('../../../src/core/usecases/ParticlePool', () => {
     maxSize: 1000,
     enableOptimization: true,
     getPoolStats: jest.fn().mockReturnValue({
-      totalActive: 100, // 0から100に変更
+      activeCount: 100, // totalActiveからactiveCountに変更
       totalRecycled: 0,
       utilization: 0.1,
+      totalCreated: 100,
     }),
     optimizePool: jest.fn(),
     cleanupDeadParticles: jest.fn(),
     update: jest.fn(),
     reset: jest.fn(),
+    clear: jest.fn(), // clearメソッドを追加
     getActiveParticles: jest.fn().mockReturnValue([]),
   }));
 });

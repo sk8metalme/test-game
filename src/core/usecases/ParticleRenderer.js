@@ -235,6 +235,10 @@ export default class ParticleRenderer {
     let size = groupSize || particle.size || 10;
     const alpha = particle.alpha || 1.0;
     const rotation = particle.rotation || 0;
+    const color = particle.color || '#ffffff';
+
+    // 色の設定
+    ctx.fillStyle = color;
 
     // LOD（Level of Detail）の適用
     if (this.enableLOD) {
