@@ -668,8 +668,8 @@ export default class EffectsSettingsUI {
         delete normalizedSettings.effectsEnabled;
       }
 
-      // プリセット適用時は intensity を除外
-      if ('preset' in normalizedSettings && 'intensity' in normalizedSettings) {
+      // プリセット適用時のみ intensity を除外（presetキーが存在する場合のみ）
+      if ('preset' in settings && 'intensity' in normalizedSettings) {
         delete normalizedSettings.intensity;
       }
 
@@ -678,8 +678,8 @@ export default class EffectsSettingsUI {
         this.effectManager.updateConfig(normalizedSettings);
       }
 
-      // 内部状態の更新
-      this.state.currentSettings = { ...this.state.currentSettings, ...settings };
+      // 内部状態の更新（正規化された値を使用）
+      this.state.currentSettings = { ...this.state.currentSettings, ...normalizedSettings };
 
       // UIの更新
       this._updateUI();
