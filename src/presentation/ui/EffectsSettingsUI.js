@@ -492,23 +492,31 @@ export default class EffectsSettingsUI {
    * @returns {*} 正規化された値
    */
   _normalizeValue(key, value) {
+    // NaN や無効な値をデフォルト値に変換
+    let normalizedValue = value;
+
     if (typeof value === 'string') {
       const numValue = parseFloat(value);
       if (!isNaN(numValue)) {
-        value = numValue;
+        normalizedValue = numValue;
       }
     }
 
     switch (key) {
       case 'intensity':
+        return isNaN(normalizedValue) ? 0.7 : Math.max(0, Math.min(1, normalizedValue));
       case 'quality':
-        return Math.max(0, Math.min(1, value));
+        return isNaN(normalizedValue) ? 0.75 : Math.max(0, Math.min(1, normalizedValue));
       case 'particleCount':
-        return Math.max(10, Math.min(1000, parseInt(value)));
+        return isNaN(normalizedValue)
+          ? 200
+          : Math.max(10, Math.min(1000, parseInt(normalizedValue)));
       case 'animationDuration':
-        return Math.max(100, Math.min(1000, parseInt(value)));
+        return isNaN(normalizedValue)
+          ? 300
+          : Math.max(100, Math.min(1000, parseInt(normalizedValue)));
       default:
-        return value;
+        return normalizedValue;
     }
   }
 
@@ -658,6 +666,11 @@ export default class EffectsSettingsUI {
       if ('effectsEnabled' in normalizedSettings) {
         this.effectManager.setEnabled(normalizedSettings.effectsEnabled);
         delete normalizedSettings.effectsEnabled;
+      }
+
+      // プリセット適用時は intensity を除外
+      if ('preset' in normalizedSettings && 'intensity' in normalizedSettings) {
+        delete normalizedSettings.intensity;
       }
 
       // EffectManagerへの適用
@@ -841,6 +854,11 @@ export default class EffectsSettingsUI {
   destroy() {
     this._stopAutoUpdate();
     this.hide();
+
+    // UIを完全にクリア
+    if (this.container) {
+      this.container.innerHTML = '';
+    }
 
     this.state.isInitialized = false;
     this.effectManager = null;

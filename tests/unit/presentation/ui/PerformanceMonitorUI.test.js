@@ -232,7 +232,7 @@ describe('PerformanceMonitorUI', () => {
         container,
         mockPerformanceMonitor,
         mockModernUI,
-        { updateInterval: 100 }
+        { updateInterval: 50 }
       );
       performanceMonitorUI.show();
       performanceMonitorUI.startMonitoring();
@@ -241,8 +241,8 @@ describe('PerformanceMonitorUI', () => {
         expect(mockPerformanceMonitor.getMetrics).toHaveBeenCalledTimes(2); // 初期表示 + 自動更新
         performanceMonitorUI.stopMonitoring();
         done();
-      }, 150);
-    });
+      }, 100);
+    }, 5000);
   });
 
   describe('パフォーマンス警告', () => {

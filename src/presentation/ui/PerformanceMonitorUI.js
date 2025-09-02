@@ -668,6 +668,8 @@ export default class PerformanceMonitorUI {
    * @private
    */
   _clearUI() {
+    if (!this.container) return;
+
     const monitor = this.container.querySelector('.performance-monitor');
     if (monitor) {
       monitor.remove();
@@ -714,6 +716,11 @@ export default class PerformanceMonitorUI {
 
     // UIを完全に削除
     this._clearUI();
+
+    // コンテナを完全にクリア
+    if (this.container) {
+      this.container.innerHTML = '';
+    }
 
     this.state.isVisible = false;
     this.performanceMonitor = null;

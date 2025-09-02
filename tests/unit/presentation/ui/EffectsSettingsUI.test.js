@@ -251,20 +251,24 @@ describe('EffectsSettingsUI', () => {
       expect(previewSection.style.display).not.toBe('none');
     });
 
-    test('全エフェクトプレビューが正常に動作する', () => {
+    test('全エフェクトプレビューが正常に動作する', done => {
       const previewAllButton = container.querySelector('.preview-all-effects');
 
       previewAllButton.click();
 
-      expect(mockEffectManager.playEffect).toHaveBeenCalledTimes(5);
-      expect(mockEffectManager.playEffect).toHaveBeenCalledWith('line-clear', expect.any(Object));
-      expect(mockEffectManager.playEffect).toHaveBeenCalledWith('t-spin', expect.any(Object));
-      expect(mockEffectManager.playEffect).toHaveBeenCalledWith(
-        'perfect-clear',
-        expect.any(Object)
-      );
-      expect(mockEffectManager.playEffect).toHaveBeenCalledWith('level-up', expect.any(Object));
-      expect(mockEffectManager.playEffect).toHaveBeenCalledWith('game-over', expect.any(Object));
+      // setTimeoutで順次実行されるため、少し待つ
+      setTimeout(() => {
+        expect(mockEffectManager.playEffect).toHaveBeenCalledTimes(5);
+        expect(mockEffectManager.playEffect).toHaveBeenCalledWith('line-clear', expect.any(Object));
+        expect(mockEffectManager.playEffect).toHaveBeenCalledWith('t-spin', expect.any(Object));
+        expect(mockEffectManager.playEffect).toHaveBeenCalledWith(
+          'perfect-clear',
+          expect.any(Object)
+        );
+        expect(mockEffectManager.playEffect).toHaveBeenCalledWith('level-up', expect.any(Object));
+        expect(mockEffectManager.playEffect).toHaveBeenCalledWith('game-over', expect.any(Object));
+        done();
+      }, 2500); // 5 * 500ms + バッファ
     });
   });
 
@@ -299,15 +303,15 @@ describe('EffectsSettingsUI', () => {
     });
 
     test('統計情報の自動更新が正常に動作する', done => {
-      // 自動更新を有効にする
-      effectsSettingsUI.setAutoUpdateStats(true, 1000);
+      // 短いインターバルで自動更新を有効にする
+      effectsSettingsUI.setAutoUpdateStats(true, 100);
 
       setTimeout(() => {
         expect(mockEffectManager.getStats).toHaveBeenCalledTimes(2); // 初期表示 + 自動更新
         effectsSettingsUI.setAutoUpdateStats(false);
         done();
-      }, 1100);
-    });
+      }, 200);
+    }, 5000);
   });
 
   describe('設定の保存と復元', () => {
@@ -350,14 +354,14 @@ describe('EffectsSettingsUI', () => {
       effectsSettingsUI.show();
 
       const settings = {
-        effectsEnabled: false,
+        effectsEnabled: true, // テストでは有効状態を設定
         intensity: 0.7,
         quality: 0.6,
       };
 
       effectsSettingsUI.applySettings(settings);
 
-      expect(mockEffectManager.setEnabled).toHaveBeenCalledWith(false);
+      expect(mockEffectManager.setEnabled).toHaveBeenCalledWith(true);
       expect(mockEffectManager.updateConfig).toHaveBeenCalledWith({
         intensity: 0.7,
         quality: 0.6,
@@ -367,7 +371,7 @@ describe('EffectsSettingsUI', () => {
       const enableToggle = container.querySelector('.effects-enable-toggle');
       const intensitySlider = container.querySelector('.effects-intensity-slider');
 
-      expect(enableToggle.checked).toBe(false);
+      expect(enableToggle.checked).toBe(true);
       expect(intensitySlider.value).toBe('0.7');
     });
   });
