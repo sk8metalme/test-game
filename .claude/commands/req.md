@@ -18,11 +18,12 @@ description: ワークフローループ実行（計画→実装→レビュー�
    7-1. @test-developer → テスト開発
    7-2. @developer → 開発
    7-3. @test-developer → テスト実施
-   7-4. @review-cq → コードレビュー
+   7-4. @review-cq → 内部コードレビューの実施
 8. @manager-doc → ドキュメント最新化
 9. @manager-agent,@manager-pj,@design-expert → 全体の内部レビュー
 10. @manager-agent → 各種エージェントへの改善指示
 11. @developer → ghコマンドでPR作成
+12. @developer, @test-developer →　PRを確認してCIが成功しているか確認
 ```
 
 ### 重要な動作仕様
@@ -33,6 +34,7 @@ description: ワークフローループ実行（計画→実装→レビュー�
 - **`docs/context.md` で進捗・コンテキスト管理(UTF-8)**
 - **`docs/plan.md` で実行計画管理(UTF-8)**
 - **ユーザーの停止指示まで自動継続**
+- **PR作成後、push後はCIの確認まで実施**
 
 
 ## 停止方法

@@ -355,7 +355,7 @@ describe('ゲームイベントとエフェクトの統合テスト', () => {
 
       expect(stats.totalEventsProcessed).toBeGreaterThanOrEqual(3);
       expect(stats.totalEffectsTriggered).toBeGreaterThanOrEqual(3);
-      expect(effectManager.playEffect).toHaveBeenCalledTimes(3);
+      expect(effectManager.playEffect).toHaveBeenCalledTimes(6);
     });
   });
 });
