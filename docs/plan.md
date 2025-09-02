@@ -45,11 +45,25 @@ ParticleSystem (Application Layer)
 - [x] パフォーマンス監視
 - [x] LODシステムの実装
 
-#### ステップ6: システム統合 🔄
-- [ ] ParticleSystemクラスの実装
-- [ ] 全コンポーネントの統合テスト
-- [ ] システム全体のパフォーマンステスト
-- [ ] 最終的なドキュメント更新
+#### ステップ6: システム統合 ✅
+- [x] ParticleSystemクラスの実装
+- [x] 全コンポーネントの統合テスト
+- [x] システム全体のパフォーマンステスト
+- [x] 最終的なドキュメント更新
+
+#### ステップ7: ゲームエフェクト実装 ✅
+- [x] LineClearEffect（ライン削除エフェクト）
+- [x] TSpinEffect（T-Spinエフェクト）
+- [x] PerfectClearEffect（Perfect Clearエフェクト）
+- [x] LevelUpEffect（レベルアップエフェクト）
+- [x] GameOverEffect（ゲームオーバーエフェクト）
+- [x] EffectManager（エフェクト管理システム）
+
+#### ステップ8: ゲームイベントとの連携実装 🔄
+- [ ] GameEventEmitterクラスの実装
+- [ ] GameLogicとのイベント連携
+- [ ] エフェクト自動実行システム
+- [ ] 統合テストの実装
 
 ### 📊 成功指標
 - **パフォーマンス**: 60FPS維持（パーティクル1000個以上）
@@ -58,50 +72,76 @@ ParticleSystem (Application Layer)
 - **コード品質**: ESLintエラー0件
 
 ### 🎮 実装するエフェクト
-1. **ライン削除**: 爆発効果、光の粒子
-2. **T-Spin**: 特殊な光の効果
-3. **Perfect Clear**: 壮大なクリア効果
-4. **レベルアップ**: 祝福の効果
-5. **ゲームオーバー**: 悲しい効果
+1. **ライン削除**: 爆発効果、光の粒子 ✅
+2. **T-Spin**: 特殊な光の効果 ✅
+3. **Perfect Clear**: 壮大なクリア効果 ✅
+4. **レベルアップ**: 祝福の効果 ✅
+5. **ゲームオーバー**: 悲しい効果 ✅
 
-## 🚀 現在のフェーズ: ParticleSystem統合
+## 🚀 現在のフェーズ: ゲームイベントとの連携実装
 
-### 📋 ParticleSystem実装計画
+### 📋 ゲームイベント連携実装計画
 
 #### 実装概要
-パーティクルシステム全体を統合するアプリケーション層のクラスを実装します。全コンポーネントの管理、ライフサイクル制御、パフォーマンス監視を提供します。
+GameLogicとEffectManagerを連携させ、ゲームイベントに応じて自動的にパーティクルエフェクトを実行するシステムを実装します。
 
 #### 技術仕様
-- **統合管理**: ParticlePool、ParticleEmitter、ParticleEffect、ParticleRendererの統合
-- **ライフサイクル制御**: システム全体の開始・停止・更新・一時停止
-- **エフェクト管理**: 複数エフェクトの同時実行と優先度制御
-- **パフォーマンス監視**: システム全体の統計情報と最適化
-- **設定管理**: 動的な設定変更と環境適応
+- **イベントシステム**: GameEventEmitterによるイベント配信
+- **自動連携**: ゲームイベントとエフェクトの自動実行
+- **設定管理**: エフェクトの有効/無効切り替え
+- **パフォーマンス監視**: エフェクト実行時の性能監視
+- **統合テスト**: 全システムの動作確認
 
 #### 実装するメソッド
 ```javascript
-class ParticleSystem {
-  constructor(config) { /* 初期化 */ }
-  start() { /* システム開始 */ }
-  stop() { /* システム停止 */ }
-  pause() { /* 一時停止 */ }
-  resume() { /* 再開 */ }
-  update(deltaTime) { /* システム更新 */ }
-  addEffect(effect) { /* エフェクト追加 */ }
-  removeEffect(effectName) { /* エフェクト削除 */ }
-  getSystemStats() { /* システム統計取得 */ }
-  optimizeSystem() { /* システム最適化 */ }
+class GameEventEmitter {
+  constructor() { /* 初期化 */ }
+  emit(eventName, data) { /* イベント配信 */ }
+  on(eventName, callback) { /* イベントリスナー登録 */ }
+  off(eventName, callback) { /* イベントリスナー削除 */ }
+}
+
+class GameEventIntegrator {
+  constructor(gameLogic, effectManager) { /* 初期化 */ }
+  integrate() { /* イベント連携設定 */ }
+  handleLineClear(data) { /* ライン削除イベント処理 */ }
+  handleTSpin(data) { /* T-Spinイベント処理 */ }
+  handlePerfectClear(data) { /* Perfect Clearイベント処理 */ }
+  handleLevelUp(data) { /* レベルアップイベント処理 */ }
+  handleGameOver(data) { /* ゲームオーバーイベント処理 */ }
 }
 ```
 
+#### 連携するゲームイベント
+1. **ライン削除イベント**: `checkAndClearLines()` → `line-clear`エフェクト
+2. **T-Spinイベント**: SpecialRulesEngine → `t-spin`エフェクト
+3. **Perfect Clearイベント**: SpecialRulesEngine → `perfect-clear`エフェクト
+4. **レベルアップイベント**: `updateLines()` → `level-up`エフェクト
+5. **ゲームオーバーイベント**: `spawnNextPiece()` → `game-over`エフェクト
+
 #### テスト戦略
-1. **単体テスト**: 各メソッドの動作確認
-2. **統合テスト**: 全コンポーネントとの連携確認
-3. **パフォーマンステスト**: システム全体の効率性確認
-4. **ライフサイクルテスト**: 開始・停止・一時停止の動作確認
+1. **単体テスト**: 各イベントハンドラーの動作確認
+2. **統合テスト**: GameLogicとEffectManagerの連携確認
+3. **パフォーマンステスト**: エフェクト実行時の性能確認
+4. **イベントテスト**: イベント配信と受信の動作確認
 
 #### 成功基準
 - **テストカバレッジ**: 95%以上
-- **パフォーマンス**: 全コンポーネント統合後も60FPS維持
+- **パフォーマンス**: エフェクト実行時も60FPS維持
 - **統合性**: 既存システムとの完全な互換性
 - **安定性**: 長時間動作での安定性確保
+- **自動化**: ゲームイベントとエフェクトの自動連携
+
+### 🔗 連携アーキテクチャ
+```
+GameLogic → GameEventEmitter → EffectManager → ParticleSystem
+     ↓              ↓              ↓              ↓
+  イベント発生   イベント配信    エフェクト実行   パーティクル描画
+```
+
+### 📝 実装順序
+1. **GameEventEmitter**: イベント配信システム
+2. **GameEventIntegrator**: イベント連携システム
+3. **GameLogic修正**: イベント発行の追加
+4. **統合テスト**: 全システムの動作確認
+5. **パフォーマンス最適化**: エフェクト実行時の最適化
