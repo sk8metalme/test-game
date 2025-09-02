@@ -428,7 +428,7 @@ describe('EffectsSettingsUI', () => {
       // デフォルト値が適用される
       expect(mockEffectManager.updateConfig).toHaveBeenCalledWith({
         intensity: 0.7, // デフォルト値（_normalizeValueから）
-        quality: 0.75, // デフォルト値
+        quality: 0, // デフォルト値（0以下は0に正規化）
         particleCount: 200, // デフォルト値
       });
     });
