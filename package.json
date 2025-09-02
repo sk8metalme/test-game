@@ -4,7 +4,8 @@
   "description": "Tetris Generation AI Game",
   "main": "src/presentation/main.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --testPathIgnorePatterns=e2e",
+    "test:e2e": "jest --testPathPattern=e2e",
     "test:fast": "jest --testPathIgnorePatterns=tests/performance/",
     "test:performance": "jest --config jest.performance.config.js",
     "test:watch": "jest --watch",
