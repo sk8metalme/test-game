@@ -61,7 +61,7 @@ export default class ObjectPool {
     }
 
     // 最大サイズに達している場合は警告
-    console.warn('ObjectPool: 最大サイズに達しました。パフォーマンスが低下する可能性があります。');
+    // console.warn('ObjectPool: 最大サイズに達しました。パフォーマンスが低下する可能性があります。');
     return this.createFn();
   }
 
@@ -115,7 +115,7 @@ export default class ObjectPool {
    */
   resize(newSize) {
     if (newSize < this.activeCount) {
-      console.warn('ObjectPool: アクティブなオブジェクト数より小さいサイズには設定できません。');
+      // console.warn('ObjectPool: アクティブなオブジェクト数より小さいサイズには設定できません。');
       return;
     }
 
@@ -137,11 +137,11 @@ export default class ObjectPool {
 
     // パフォーマンス警告
     if (stats.utilization > 0.8) {
-      console.warn('ObjectPool: 高い使用率です。プールサイズの増加を検討してください。');
+      // console.warn('ObjectPool: 高い使用率です。プールサイズの増加を検討してください。');
     }
 
     if (stats.memoryEfficiency < 0.2) {
-      console.warn('ObjectPool: 低いメモリ効率です。プールサイズの調整を検討してください。');
+      // console.warn('ObjectPool: 低いメモリ効率です。プールサイズの調整を検討してください。');
     }
 
     return {
