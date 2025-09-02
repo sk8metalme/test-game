@@ -1,5 +1,5 @@
-import ParticlePool from './ParticlePool';
-import ParticleRenderer from './ParticleRenderer';
+import ParticlePool from './ParticlePool.js';
+import ParticleRenderer from './ParticleRenderer.js';
 // import PerformanceMonitor from './PerformanceMonitor';
 
 /**
@@ -7,11 +7,7 @@ import ParticleRenderer from './ParticleRenderer';
  * 全コンポーネントの管理、ライフサイクル制御、パフォーマンス監視を提供
  */
 export default class ParticleSystem {
-  constructor(canvas, config = {}) {
-    if (!canvas) {
-      throw new Error('ParticleSystem: Canvas要素が必要です');
-    }
-
+  constructor(canvas = null, config = {}) {
     this.canvas = canvas;
     this.name = 'ParticleSystem';
     this.enabled = true;
@@ -29,10 +25,12 @@ export default class ParticleSystem {
       maxSize: config.maxParticles || 1000,
       enableOptimization: config.enableOptimization !== false,
     });
-    this.renderer = new ParticleRenderer(canvas, {
-      maxParticles: config.maxParticles || 1000,
-      targetFPS: config.targetFPS || 60,
-    });
+    this.renderer = canvas
+      ? new ParticleRenderer(canvas, {
+          maxParticles: config.maxParticles || 1000,
+          targetFPS: config.targetFPS || 60,
+        })
+      : null;
     this.effects = new Map();
 
     // パフォーマンス監視
@@ -104,6 +102,22 @@ export default class ParticleSystem {
   }
 
   /**
+   * Canvasを設定する
+   * @param {HTMLCanvasElement} canvas - 描画用のCanvas要素
+   */
+  setCanvas(canvas) {
+    if (!canvas) {
+      throw new Error('ParticleSystem: Canvas要素が必要です');
+    }
+
+    this.canvas = canvas;
+    this.renderer = new ParticleRenderer(canvas, {
+      maxParticles: this.config.maxParticles,
+      targetFPS: this.config.targetFPS,
+    });
+  }
+
+  /**
    * システムを停止する
    */
   stop() {
@@ -170,8 +184,15 @@ export default class ParticleSystem {
   /**
    * システムを描画する
    */
-  render() {
+  render(canvas = null) {
     if (!this.isRunning || this.isPaused) return;
+
+    // canvasが指定された場合は設定
+    if (canvas && !this.canvas) {
+      this.setCanvas(canvas);
+    }
+
+    if (!this.renderer) return;
 
     const renderStartTime = performance.now();
 

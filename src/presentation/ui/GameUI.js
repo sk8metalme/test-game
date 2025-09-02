@@ -41,9 +41,11 @@ export default class GameUI {
    */
   showMenu(menuItems = ['Start Game', 'Settings', 'High Scores', 'Exit']) {
     try {
+      console.log('GameUI showMenu called with items:', menuItems);
       this._clearContainer();
 
       const menuHTML = this._generateMenuHTML(menuItems);
+      console.log('Generated menu HTML length:', menuHTML.length);
       this.container.innerHTML = menuHTML;
 
       this._currentScreen = 'menu';
@@ -264,8 +266,12 @@ export default class GameUI {
    */
   selectMenuItem(item) {
     try {
+      console.log('GameUI selectMenuItem called with:', item);
+      console.log('_menuSelectCallback exists:', !!this._menuSelectCallback);
       if (this._menuSelectCallback) {
         this._menuSelectCallback(item);
+      } else {
+        console.warn('No menu select callback set');
       }
     } catch (error) {
       this._handleError('selectMenuItem', error);
@@ -671,6 +677,7 @@ export default class GameUI {
    * @returns {string} メニューHTML
    */
   _generateMenuHTML(menuItems) {
+    console.log('_generateMenuHTML called with:', menuItems);
     const menuItemsHTML = menuItems
       .map(
         item =>
@@ -678,7 +685,7 @@ export default class GameUI {
       )
       .join('');
 
-    return `
+    const html = `
       <div class="menu-screen">
         <h1 class="menu-title">TETRIS</h1>
         <div class="menu-items">
@@ -686,6 +693,8 @@ export default class GameUI {
         </div>
       </div>
     `;
+    console.log('Generated menu HTML:', html);
+    return html;
   }
 
   /**
@@ -702,9 +711,9 @@ export default class GameUI {
           <div class="game-lines">Lines: 0</div>
         </div>
         <div class="game-board">
-          <canvas id="game-canvas" width="800" height="600"></canvas>
+          <canvas id="main-canvas" width="800" height="600"></canvas>
         </div>
-        <div class="game-sidebar">
+        <div class="game-info-inline">
           <div class="next-piece">Next: I</div>
           <div class="game-state"></div>
         </div>
