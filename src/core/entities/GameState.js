@@ -524,8 +524,8 @@ export class GameState {
 
     if (newLevel > oldLevel) {
       this.level = newLevel;
-      this.emit('levelUp', {
-        type: 'levelUp',
+      this.emit('level.up', {
+        type: 'level.up',
         oldLevel,
         newLevel,
         totalLines: this.lines,

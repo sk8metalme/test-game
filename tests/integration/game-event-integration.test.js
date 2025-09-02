@@ -282,7 +282,7 @@ describe('ゲームイベントとエフェクトの統合テスト', () => {
       expect(stats.totalEventsProcessed).toBeGreaterThan(0);
       expect(stats.totalEffectsTriggered).toBeGreaterThan(0);
       expect(stats.eventsByType['lines.cleared']).toBeGreaterThan(0);
-      expect(stats.eventsByType['levelUp']).toBeGreaterThan(0);
+      expect(stats.eventsByType['level.up']).toBeGreaterThan(0);
       expect(stats.effectsByType['line-clear']).toBeGreaterThan(0);
       expect(stats.effectsByType['level-up']).toBeGreaterThan(0);
     });
