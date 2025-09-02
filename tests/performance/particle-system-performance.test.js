@@ -1,8 +1,8 @@
-import Particle from '../../src/core/entities/Particle.js';
-import ParticlePool from '../../src/core/usecases/ParticlePool.js';
+// import Particle from '../../src/core/entities/Particle.js';
+// import ParticlePool from '../../src/core/usecases/ParticlePool.js';
 import ParticleEmitter from '../../src/core/usecases/ParticleEmitter.js';
 import ParticleEffect from '../../src/core/usecases/ParticleEffect.js';
-import ParticleRenderer from '../../src/core/usecases/ParticleRenderer.js';
+// import ParticleRenderer from '../../src/core/usecases/ParticleRenderer.js';
 import ParticleSystem from '../../src/core/usecases/ParticleSystem.js';
 
 // モックCanvasの作成
@@ -33,13 +33,13 @@ const createMockCanvas = () => {
 };
 
 describe('ParticleSystem Performance Tests', () => {
-  let mockCanvas, mockContext;
+  let mockCanvas, _mockContext;
   let particleSystem;
 
   beforeEach(() => {
     const mock = createMockCanvas();
     mockCanvas = mock.canvas;
-    mockContext = mock.context;
+    _mockContext = mock.context;
 
     // パーティクルシステムの初期化
     particleSystem = new ParticleSystem(mockCanvas, {
@@ -82,10 +82,10 @@ describe('ParticleSystem Performance Tests', () => {
       expect(memoryUsage.peak).toBeGreaterThanOrEqual(memoryUsage.current);
       expect(memoryUsage.average).toBeGreaterThan(0);
 
-      console.log(`メモリ使用量: ${stats.memoryUsage} bytes`);
-      console.log(
-        `メモリ詳細: 現在=${memoryUsage.current}, ピーク=${memoryUsage.peak}, 平均=${memoryUsage.average}`
-      );
+      // console.log(`メモリ使用量: ${stats.memoryUsage} bytes`);
+      // console.log(
+      //   `メモリ詳細: 現在=${memoryUsage.current}, ピーク=${memoryUsage.peak}, 平均=${memoryUsage.average}`
+      // );
     });
 
     test('アクティブパーティクル追跡の効率性', () => {
@@ -117,7 +117,7 @@ describe('ParticleSystem Performance Tests', () => {
       // 4. パフォーマンス確認（100回の更新が1秒以内に完了）
       expect(totalTime).toBeLessThan(1000);
 
-      console.log(`アクティブパーティクル追跡時間: ${totalTime}ms`);
+      // console.log(`アクティブパーティクル追跡時間: ${totalTime}ms`);
     });
   });
 
@@ -151,10 +151,10 @@ describe('ParticleSystem Performance Tests', () => {
       expect(totalTime).toBeLessThan(1000);
 
       // 5. 描画統計の確認
-      const rendererStats = particleSystem.renderer.getStats();
+      const _rendererStats = particleSystem.renderer.getStats();
 
-      console.log(`描画時間: ${totalTime}ms`);
-      console.log(`描画統計: ${JSON.stringify(rendererStats)}`);
+      // console.log(`描画時間: ${totalTime}ms`);
+      // console.log(`描画統計: ${JSON.stringify(rendererStats)}`);
 
       // 描画統計が更新されていることを確認（renderCallsまたはframesRendered）
       // テスト環境では統計が0でも正常動作を確認
@@ -202,7 +202,7 @@ describe('ParticleSystem Performance Tests', () => {
       // 6. LOD効果の確認
       expect(totalTime).toBeLessThan(1000);
 
-      console.log(`LOD描画時間: ${totalTime}ms`);
+      // console.log(`LOD描画時間: ${totalTime}ms`);
     });
   });
 
@@ -229,7 +229,7 @@ describe('ParticleSystem Performance Tests', () => {
 
       // 3. 長時間の実行
       const startTime = performance.now();
-      const initialStats = optimizedSystem.getSystemStats();
+      const _initialStats = optimizedSystem.getSystemStats();
 
       for (let i = 0; i < 300; i++) {
         // 5秒間の実行
@@ -244,8 +244,8 @@ describe('ParticleSystem Performance Tests', () => {
       expect(endTime - startTime).toBeLessThan(5000); // 5秒以内に完了
       expect(finalStats.poolStats.activeCount).toBeGreaterThanOrEqual(0);
 
-      console.log(`最適化前統計: ${JSON.stringify(initialStats)}`);
-      console.log(`最適化後統計: ${JSON.stringify(finalStats)}`);
+      // console.log(`最適化前統計: ${JSON.stringify(initialStats)}`);
+      // console.log(`最適化後統計: ${JSON.stringify(finalStats)}`);
     });
 
     test('メモリリークの検出', () => {
@@ -282,9 +282,9 @@ describe('ParticleSystem Performance Tests', () => {
       const memoryIncrease = finalMemory.current - initialMemory.current;
       expect(memoryIncrease).toBeLessThan(10000); // 10KB以内の増加
 
-      console.log(`初期メモリ: ${initialMemory.current} bytes`);
-      console.log(`最終メモリ: ${finalMemory.current} bytes`);
-      console.log(`メモリ増加: ${memoryIncrease} bytes`);
+      // console.log(`初期メモリ: ${initialMemory.current} bytes`);
+      // console.log(`最終メモリ: ${finalMemory.current} bytes`);
+      // console.log(`メモリ増加: ${memoryIncrease} bytes`);
     });
   });
 
@@ -322,7 +322,7 @@ describe('ParticleSystem Performance Tests', () => {
       // 4. パフォーマンス分析
       const avgFrameTime = frameTimes.reduce((a, b) => a + b, 0) / frameTimes.length;
       const maxFrameTime = Math.max(...frameTimes);
-      const minFrameTime = Math.min(...frameTimes);
+      const _minFrameTime = Math.min(...frameTimes);
       const fps = 1000 / avgFrameTime;
 
       // 5. 60FPS維持の確認
@@ -330,10 +330,10 @@ describe('ParticleSystem Performance Tests', () => {
       expect(maxFrameTime).toBeLessThan(33.33); // 最大フレーム時間は33.33ms以下
       expect(totalTime).toBeLessThan(1000); // 1秒以内に完了
 
-      console.log(`平均フレーム時間: ${avgFrameTime.toFixed(2)}ms`);
-      console.log(`最大フレーム時間: ${maxFrameTime.toFixed(2)}ms`);
-      console.log(`最小フレーム時間: ${minFrameTime.toFixed(2)}ms`);
-      console.log(`平均FPS: ${fps.toFixed(2)}`);
+      // console.log(`平均フレーム時間: ${avgFrameTime.toFixed(2)}ms`);
+      // console.log(`最大フレーム時間: ${maxFrameTime.toFixed(2)}ms`);
+      // console.log(`最小フレーム時間: ${minFrameTime.toFixed(2)}ms`);
+      // console.log(`平均FPS: ${fps.toFixed(2)}`);
     });
   });
 });

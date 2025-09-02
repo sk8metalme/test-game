@@ -72,7 +72,7 @@ describe('ParticleRenderer', () => {
 
   describe('初期化', () => {
     test('正常な設定でレンダラーが作成される', () => {
-      const renderer = new ParticleRenderer(mockCanvas, {
+      renderer = new ParticleRenderer(mockCanvas, {
         batchSize: 200,
         maxParticles: 2000,
         targetFPS: 120,
@@ -95,7 +95,7 @@ describe('ParticleRenderer', () => {
     });
 
     test('無効な設定値は適切に処理される', () => {
-      const renderer = new ParticleRenderer(mockCanvas, {
+      renderer = new ParticleRenderer(mockCanvas, {
         batchSize: -1,
         maxParticles: 0,
         targetFPS: 200,
@@ -191,7 +191,7 @@ describe('ParticleRenderer', () => {
 
   describe('バッチ処理', () => {
     test('指定されたバッチサイズで描画される', () => {
-      const renderer = new ParticleRenderer(mockCanvas, { batchSize: 2 });
+      renderer = new ParticleRenderer(mockCanvas, { batchSize: 2 });
       const particles = [
         createMockParticle({ position: { x: 100, y: 100 } }),
         createMockParticle({ position: { x: 200, y: 200 } }),
@@ -251,7 +251,7 @@ describe('ParticleRenderer', () => {
     });
 
     test('最大パーティクル数制限が正しく動作する', () => {
-      const renderer = new ParticleRenderer(mockCanvas, { maxParticles: 2 });
+      renderer = new ParticleRenderer(mockCanvas, { maxParticles: 2 });
       const particles = [
         createMockParticle({ position: { x: 100, y: 100 } }),
         createMockParticle({ position: { x: 200, y: 200 } }),
@@ -378,7 +378,7 @@ describe('ParticleRenderer', () => {
 
   describe('パフォーマンス', () => {
     test('大量パーティクルでの動作', () => {
-      const renderer = new ParticleRenderer(mockCanvas, { maxParticles: 10000 });
+      renderer = new ParticleRenderer(mockCanvas, { maxParticles: 10000 });
       const particles = Array.from({ length: 1000 }, (_, i) =>
         createMockParticle({ position: { x: i, y: i } })
       );

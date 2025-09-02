@@ -289,7 +289,7 @@ describe('Application Layer Integration Tests', () => {
 
       // 新しいピースのスポーン試行
       const spawnResult = gameLogic.spawnNextPiece();
-      console.log('Spawn result:', spawnResult);
+      // console.log('Spawn result:', spawnResult);
       // ゲームオーバー判定
       // ボードが満杯でない場合、新しいピースがスポーンできる
       if (spawnResult.success) {

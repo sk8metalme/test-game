@@ -535,7 +535,7 @@ export default class GameModeManager {
         try {
           listener(data);
         } catch (error) {
-          console.error(`GameModeManager event error:`, error);
+          // console.error(`GameModeManager event error:`, error);
         }
       });
     }

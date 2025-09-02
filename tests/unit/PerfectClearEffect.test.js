@@ -6,7 +6,7 @@ jest.mock('../../src/core/usecases/ParticleEmitter.js');
 
 describe('PerfectClearEffect', () => {
   let perfectClearEffect;
-  let mockParticleEmitter;
+  let _mockParticleEmitter;
 
   beforeEach(() => {
     // ParticleEmitterのモックをリセット

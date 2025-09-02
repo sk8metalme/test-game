@@ -823,7 +823,7 @@ export class GameState {
         listener(eventData);
       } catch (error) {
         if (process.env.NODE_ENV === 'development') {
-          console.warn(`Event listener error for ${eventType}:`, error);
+          // console.warn(`Event listener error for ${eventType}:`, error);
         }
       }
     });

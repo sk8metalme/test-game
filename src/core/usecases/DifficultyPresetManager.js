@@ -310,10 +310,10 @@ export default class DifficultyPresetManager {
         }
       }
     } catch (error) {
-      console.error(
-        'DifficultyPresetManager: カスタムプリセットの読み込みでエラーが発生しました:',
-        error
-      );
+      // console.error(
+      //   'DifficultyPresetManager: カスタムプリセットの読み込みでエラーが発生しました:',
+      //   error
+      // );
     }
   }
 
@@ -328,10 +328,10 @@ export default class DifficultyPresetManager {
       }
       localStorage.setItem('tetris_custom_presets', JSON.stringify(presetsToSave));
     } catch (error) {
-      console.error(
-        'DifficultyPresetManager: カスタムプリセットの保存でエラーが発生しました:',
-        error
-      );
+      // console.error(
+      //   'DifficultyPresetManager: カスタムプリセットの保存でエラーが発生しました:',
+      //   error
+      // );
     }
   }
 
@@ -581,7 +581,7 @@ export default class DifficultyPresetManager {
 
       return true;
     } catch (error) {
-      console.error('DifficultyPresetManager: プリセット検証でエラーが発生しました:', error);
+      // console.error('DifficultyPresetManager: プリセット検証でエラーが発生しました:', error);
       return false;
     }
   }
@@ -768,26 +768,18 @@ export default class DifficultyPresetManager {
    * @returns {boolean} インポート結果
    */
   importPreset(presetData) {
-    try {
-      const preset = JSON.parse(presetData);
+    const preset = JSON.parse(presetData);
 
-      if (!this.validatePreset(preset)) {
-        throw new Error('DifficultyPresetManager: インポートされたプリセットが無効です');
-      }
-
-      // 名前の重複チェック
-      if (this.defaultPresets.has(preset.name) || this.customPresets.has(preset.name)) {
-        preset.name = `${preset.name}_imported_${Date.now()}`;
-      }
-
-      return this.saveCustomPreset(preset.name, preset);
-    } catch (error) {
-      console.error(
-        'DifficultyPresetManager: プリセットのインポートでエラーが発生しました:',
-        error
-      );
-      throw error;
+    if (!this.validatePreset(preset)) {
+      throw new Error('DifficultyPresetManager: インポートされたプリセットが無効です');
     }
+
+    // 名前の重複チェック
+    if (this.defaultPresets.has(preset.name) || this.customPresets.has(preset.name)) {
+      preset.name = `${preset.name}_imported_${Date.now()}`;
+    }
+
+    return this.saveCustomPreset(preset.name, preset);
   }
 
   /**

@@ -628,7 +628,7 @@ export default class ModernUI {
         try {
           listener(data);
         } catch (error) {
-          console.error(`ModernUI event error:`, error);
+          // console.error(`ModernUI event error:`, error);
         }
       });
     }

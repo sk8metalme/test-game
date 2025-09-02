@@ -212,7 +212,7 @@ describe('ParticleSystem', () => {
       system.update(1000);
 
       const firstStartTime = system.startTime;
-      const firstRunTime = system.totalRunTime;
+      const _firstRunTime = system.totalRunTime;
 
       system.restart();
 

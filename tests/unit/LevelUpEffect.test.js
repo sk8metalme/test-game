@@ -198,7 +198,7 @@ describe('LevelUpEffect', () => {
       // エフェクトがアクティブであることを確認
       expect(levelUpEffect.isActive()).toBe(true);
 
-      const initialIntensity = levelUpEffect.intensity; // 1.0
+      const _initialIntensity = levelUpEffect.intensity; // 1.0
 
       // 1.5秒経過をシミュレート
       levelUpEffect.elapsedTime = 1500;

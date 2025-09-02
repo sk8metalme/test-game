@@ -434,7 +434,7 @@ export default class PerformanceMonitor {
         try {
           listener(data);
         } catch (error) {
-          console.error(`PerformanceMonitor event error:`, error);
+          // console.error(`PerformanceMonitor event error:`, error);
         }
       });
     }
