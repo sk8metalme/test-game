@@ -116,7 +116,7 @@ export default class OptimizedRenderer {
         try {
           renderFn(ctx);
         } catch (error) {
-          console.error('Render error:', error);
+          // console.error('Render error:', error);
         }
       });
 

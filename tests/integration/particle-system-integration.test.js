@@ -3,11 +3,11 @@
  * 全6コンポーネントの統合動作をテストします
  */
 
-import Particle from '../../src/core/entities/Particle.js';
-import ParticlePool from '../../src/core/usecases/ParticlePool.js';
+// import Particle from '../../src/core/entities/Particle.js';
+// import ParticlePool from '../../src/core/usecases/ParticlePool.js';
 import ParticleEmitter from '../../src/core/usecases/ParticleEmitter.js';
 import ParticleEffect from '../../src/core/usecases/ParticleEffect.js';
-import ParticleRenderer from '../../src/core/usecases/ParticleRenderer.js';
+// import ParticleRenderer from '../../src/core/usecases/ParticleRenderer.js';
 import ParticleSystem from '../../src/core/usecases/ParticleSystem.js';
 
 // モックCanvasの作成
@@ -38,7 +38,7 @@ const createMockCanvas = () => {
 };
 
 // モックパーティクルの作成
-const createMockParticle = (config = {}) => ({
+const _createMockParticle = (config = {}) => ({
   position: config.position || { x: 100, y: 100 },
   velocity: config.velocity || { x: 0, y: 0 },
   size: config.size || 10,

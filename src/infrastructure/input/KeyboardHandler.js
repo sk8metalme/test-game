@@ -368,7 +368,7 @@ export default class KeyboardHandler {
       } catch (error) {
         // エラーログは本番環境では無効化
         if (process.env.NODE_ENV === 'development') {
-          console.warn(`KeyboardHandler: Action ${action} failed:`, error);
+          // console.warn(`KeyboardHandler: Action ${action} failed:`, error);
         }
       }
     }

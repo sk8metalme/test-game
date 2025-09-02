@@ -333,7 +333,7 @@ describe('Game State Integration Tests', () => {
 
       // 大量の操作を実行
       for (let i = 0; i < 1000; i++) {
-        const tetromino = new Tetromino('I', { x: 4, y: 10 });
+        const _tetromino = new Tetromino('I', { x: 4, y: 10 });
         gameState.addSoftDropScore(1);
         gameState.incrementPieceUsage('I');
 
