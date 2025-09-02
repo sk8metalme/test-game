@@ -392,7 +392,7 @@ describe('GameLogic', () => {
         board.setCell(1, x, 1);
       }
 
-      const initialTotalGames = gameState.statistics.totalGames;
+      const _initialTotalGames = gameState.statistics.totalGames;
       gameLogic.spawnNextPiece();
 
       expect(gameState.status).toBe('GAME_OVER');

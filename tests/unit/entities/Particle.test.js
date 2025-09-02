@@ -226,8 +226,8 @@ describe('Particle', () => {
       const startTime = performance.now();
 
       // 全パーティクルを更新
-      particles.forEach(particle => {
-        particle.update(16);
+      particles.forEach(p => {
+        p.update(16);
       });
 
       const endTime = performance.now();

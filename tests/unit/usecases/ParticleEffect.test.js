@@ -21,7 +21,7 @@ describe('ParticleEffect', () => {
 
   describe('初期化', () => {
     test('正常な設定でエフェクトが作成される', () => {
-      const effect = new ParticleEffect({
+      const testEffect = new ParticleEffect({
         name: 'testEffect',
         duration: 1000,
         loop: true,
@@ -45,7 +45,7 @@ describe('ParticleEffect', () => {
     });
 
     test('無効な設定値は適切に処理される', () => {
-      const effect = new ParticleEffect({
+      const testEffect = new ParticleEffect({
         name: '',
         duration: -100,
         loop: null,
@@ -59,7 +59,7 @@ describe('ParticleEffect', () => {
 
   describe('ライフサイクル', () => {
     test('エフェクトが開始される', () => {
-      const effect = new ParticleEffect({ duration: 1000 });
+      const testEffect = new ParticleEffect({ duration: 1000 });
       const mockEmitter = createMockEmitter('test');
       effect.addEmitter(mockEmitter);
 
@@ -97,7 +97,7 @@ describe('ParticleEffect', () => {
     });
 
     test('継続時間で自動停止される', () => {
-      const effect = new ParticleEffect({ duration: 100 });
+      const testEffect = new ParticleEffect({ duration: 100 });
       const mockEmitter = createMockEmitter('test');
       effect.addEmitter(mockEmitter);
       effect.start();
@@ -114,7 +114,7 @@ describe('ParticleEffect', () => {
     });
 
     test('ループ設定で自動再開始される', () => {
-      const effect = new ParticleEffect({ duration: 100, loop: true });
+      const testEffect = new ParticleEffect({ duration: 100, loop: true });
       const mockEmitter = createMockEmitter('test');
       effect.addEmitter(mockEmitter);
       effect.start();
@@ -132,7 +132,7 @@ describe('ParticleEffect', () => {
     });
 
     test('無限継続の場合は自動停止しない', () => {
-      const effect = new ParticleEffect({ duration: -1 });
+      const testEffect = new ParticleEffect({ duration: -1 });
       const mockEmitter = createMockEmitter('test');
       effect.addEmitter(mockEmitter);
       effect.start();
@@ -263,7 +263,7 @@ describe('ParticleEffect', () => {
     });
 
     test('完了状態が正しく確認される', () => {
-      const effect = new ParticleEffect({ duration: 100 });
+      const testEffect = new ParticleEffect({ duration: 100 });
       effect.start();
 
       expect(effect.isFinished()).toBe(false);
@@ -280,14 +280,14 @@ describe('ParticleEffect', () => {
     });
 
     test('無限継続の場合は完了しない', () => {
-      const effect = new ParticleEffect({ duration: -1 });
+      const testEffect = new ParticleEffect({ duration: -1 });
       effect.start();
 
       expect(effect.isFinished()).toBe(false);
     });
 
     test('進行状況が正しく計算される', () => {
-      const effect = new ParticleEffect({ duration: 100 });
+      const testEffect = new ParticleEffect({ duration: 100 });
       effect.start();
 
       expect(effect.getProgress()).toBe(0);
@@ -304,7 +304,7 @@ describe('ParticleEffect', () => {
     });
 
     test('進行状況は1.0を超えない', () => {
-      const effect = new ParticleEffect({ duration: 100 });
+      const testEffect = new ParticleEffect({ duration: 100 });
       effect.start();
 
       // 時間を進める
@@ -347,7 +347,7 @@ describe('ParticleEffect', () => {
     });
 
     test('実行統計が正しく更新される', () => {
-      const effect = new ParticleEffect({ duration: 100 });
+      const testEffect = new ParticleEffect({ duration: 100 });
       effect.start();
 
       // 時間を進める
@@ -407,7 +407,7 @@ describe('ParticleEffect', () => {
     });
 
     test('長時間実行での安定性', () => {
-      const effect = new ParticleEffect({ duration: -1, loop: true });
+      const testEffect = new ParticleEffect({ duration: -1, loop: true });
       const mockEmitter = createMockEmitter('test');
       effect.addEmitter(mockEmitter);
       effect.start();
