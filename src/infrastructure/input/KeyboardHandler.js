@@ -329,7 +329,7 @@ export default class KeyboardHandler {
     }
 
     // コードが利用可能ならコードを優先
-    if ((code && code.startsWith('Key')) || code.startsWith('Arrow')) {
+    if (code && (code.startsWith('Key') || code.startsWith('Arrow'))) {
       return code;
     }
 

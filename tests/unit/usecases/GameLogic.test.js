@@ -374,23 +374,19 @@ describe('GameLogic', () => {
     });
 
     test('スポーン位置での衝突でゲームオーバー', () => {
-      // スポーン位置（中央上部）にブロックを配置してゲームオーバー条件を作成
-      board.setCell(4, 0, 1);
-      board.setCell(5, 0, 1);
-      board.setCell(4, 1, 1);
-      board.setCell(5, 1, 1);
+      // スポーン領域を全面ブロック（形状/回転に依存せず確実に衝突）
+      for (let row = 0; row <= 1; row++) {
+        for (let x = 0; x < 10; x++) {
+          board.setCell(row, x, 1);
+        }
+      }
 
       const result = gameLogic.spawnNextPiece();
 
-      // スポーンが失敗するか、ゲームオーバーになることを確認
-      if (result.success === false) {
-        expect(result.gameOver).toBe(true);
-        expect(result.reason).toBe('spawn_collision');
-        expect(gameState.status).toBe('GAME_OVER');
-      } else {
-        // スポーンが成功した場合でも、次のピースでゲームオーバーになる可能性がある
-        expect(result.success).toBe(true);
-      }
+      expect(result.success).toBe(false);
+      expect(result.gameOver).toBe(true);
+      expect(result.reason).toBe('spawn_collision');
+      expect(gameState.status).toBe('GAME_OVER');
     });
 
     test('ゲームオーバー時の統計更新', () => {

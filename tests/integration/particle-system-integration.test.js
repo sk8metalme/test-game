@@ -254,7 +254,7 @@ describe('ParticleSystem Integration Tests', () => {
     test('リソース不足時の動作', () => {
       // 1. 大量のエフェクトを追加
       for (let i = 0; i < 100; i++) {
-        const effect = new ParticleEffect(`effect-${i}`, { duration: 1000 });
+        const effect = new ParticleEffect({ name: `effect-${i}`, duration: 1000 });
         const emitter = new ParticleEmitter({
           position: { x: Math.random() * 800, y: Math.random() * 600 },
           emissionRate: 100,
