@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>テトリスゲーム - 完全版デモ</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        
+        .game-header {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            border-bottom: 2px solid #00ff00;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .game-title {
+            font-size: 1.5em;
+            color: #00ff00;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        
+        .game-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .control-button {
+            padding: 8px 16px;
+            background: linear-gradient(45deg, #333333, #555555);
+            color: #ffffff;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+        
+        .control-button:hover {
+            background: linear-gradient(45deg, #00ff00, #00cc00);
+            color: #000000;
+        }
+        
+        .control-button:disabled {
+            background: #666666;
+            color: #999999;
+            cursor: not-allowed;
+        }
+        
+        .game-content {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .game-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #00ff00;
+            font-size: 0.9em;
+            z-index: 100;
+            min-width: 200px;
+        }
+        
+        .game-info h3 {
+            margin: 0 0 10px 0;
+            color: #00ff00;
+            font-size: 1.1em;
+        }
+        
+        .game-info p {
+            margin: 5px 0;
+            color: #cccccc;
+        }
+        
+        .game-info .score {
+            color: #ffff00;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .game-info .level {
+            color: #00ff00;
+            font-weight: bold;
+        }
+        
+        .game-info .lines {
+            color: #ff8800;
+            font-weight: bold;
+        }
+        
+        .instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ff4444;
+            font-size: 0.8em;
+            z-index: 100;
+            max-width: 300px;
+        }
+        
+        .instructions h3 {
+            margin: 0 0 10px 0;
+            color: #ff4444;
+            font-size: 1em;
+        }
+        
+        .instructions div {
+            margin: 3px 0;
+            color: #cccccc;
+        }
+        
+        .instructions .key {
+            color: #00ff00;
+            font-weight: bold;
+        }
+        
+        .performance-info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #0088ff;
+            font-size: 0.8em;
+            z-index: 100;
+            max-width: 250px;
+        }
+        
+        .performance-info h3 {
+            margin: 0 0 10px 0;
+            color: #0088ff;
+            font-size: 1em;
+        }
+        
+        .performance-info p {
+            margin: 3px 0;
+            color: #cccccc;
+            font-family: monospace;
+        }
+        
+        .performance-info .fps {
+            color: #00ff00;
+        }
+        
+        .performance-info .memory {
+            color: #ffff00;
+        }
+        
+        /* GameUI固有のスタイル */
+        .menu-screen {
+            text-align: center;
+            padding: 40px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .menu-title {
+            font-size: 4em;
+            margin: 0 0 40px 0;
+            color: #00ff00;
+            text-shadow: 0 0 20px #00ff00;
+            font-weight: bold;
+            letter-spacing: 3px;
+        }
+        
+        .menu-items {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .menu-item {
+            padding: 20px;
+            font-size: 1.3em;
+            background: linear-gradient(45deg, #333333, #555555);
+            color: #ffffff;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .menu-item:hover {
+            background: linear-gradient(45deg, #00ff00, #00cc00);
+            color: #000000;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.6);
+        }
+        
+        .game-screen {
+            display: grid;
+            grid-template-columns: 1fr; /* 右カラムを廃止 */
+            gap: 20px;
+            height: 100%;
+            padding: 20px;
+        }
+        
+        .game-board-container {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            display: flex;
+            align-items: flex-start; /* 左上固定 */
+            justify-content: flex-start; /* 左上固定 */
+            padding: 12px;
+            position: relative;
+        }
+        
+        .game-board-container canvas {
+            border: 1px solid #333333;
+            background: #000000;
+            image-rendering: pixelated;
+        }
+        
+        .game-info-inline {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        
+        .next-piece, .game-state {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #00ff00;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .next-piece {
+            color: #ffff00;
+        }
+        
+        .game-state {
+            color: #ff4444;
+        }
+        
+        .game-state.paused {
+            color: #ffff00;
+        }
+        
+        .game-state.game-over {
+            color: #ff4444;
+        }
+        
+        .settings-screen {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            height: 100%;
+            overflow-y: auto;
+        }
+        
+        .settings-title {
+            text-align: center;
+            font-size: 2.5em;
+            margin: 0 0 30px 0;
+            color: #00ff00;
+        }
+        
+        .settings-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            border: 1px solid #333333;
+        }
+        
+        .setting-item label {
+            font-weight: bold;
+            color: #00ff00;
+            font-size: 1.1em;
+        }
+        
+        .setting-item select, .setting-item input[type="range"] {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #00ff00;
+            background: #333333;
+            color: #ffffff;
+        }
+        
+        .setting-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #00ff00;
+        }
+        
+        .back-button {
+            display: block;
+            margin: 30px auto 0;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            background: linear-gradient(45deg, #666666, #888888);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .back-button:hover {
+            background: linear-gradient(45deg, #888888, #aaaaaa);
+            transform: translateY(-2px);
+        }
+        
+        .high-scores-screen {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            height: 100%;
+            overflow-y: auto;
+        }
+        
+        .high-scores-title {
+            text-align: center;
+            font-size: 2.5em;
+            margin: 0 0 30px 0;
+            color: #00ff00;
+        }
+        
+        .high-scores-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .score-item {
+            display: grid;
+            grid-template-columns: 60px 1fr 120px 100px 100px;
+            gap: 15px;
+            align-items: center;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            border: 1px solid #333333;
+        }
+        
+        .score-item .rank {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #ffff00;
+            text-align: center;
+        }
+        
+        .score-item .player {
+            font-weight: bold;
+            color: #00ff00;
+        }
+        
+        .score-item .score {
+            font-weight: bold;
+            color: #ffff00;
+            text-align: right;
+        }
+        
+        .score-item .level, .score-item .lines {
+            color: #cccccc;
+            text-align: center;
+        }
+        
+        .no-scores {
+            text-align: center;
+            font-size: 1.2em;
+            color: #666666;
+            font-style: italic;
+            padding: 40px;
+        }
+        
+        /* レスポンシブ対応 */
+        @media (max-width: 768px) {
+            .game-screen {
+                grid-template-columns: 1fr;
+            }
+            
+            .game-info, .performance-info, .instructions {
+                position: static;
+                margin: 10px;
+                max-width: none;
+            }
+            
+            .menu-title {
+                font-size: 2.5em;
+            }
+            
+            .score-item {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <div class="game-title">TETRIS GAME</div>
+            <div class="game-controls">
+                <button class="control-button" onclick="showMenu()">メニュー</button>
+                <button class="control-button" id="pause-btn" onclick="togglePause()" disabled>一時停止</button>
+                <button class="control-button" id="reset-btn" onclick="resetGame()" disabled>リセット</button>
+                <button class="control-button" onclick="showSettings()">設定</button>
+            </div>
+        </div>
+        
+        <div class="game-content" id="game-content">
+            <div class="game-info" id="game-info" style="display: none;">
+                <h3>ゲーム情報</h3>
+                <p>スコア: <span class="score" id="score">0</span></p>
+                <p>レベル: <span class="level" id="level">1</span></p>
+                <p>ライン: <span class="lines" id="lines">0</span></p>
+                <p>次のピース: <span id="next-piece">I</span></p>
+            </div>
+            
+            <div class="performance-info" id="performance-info" style="display: none;">
+                <h3>パフォーマンス</h3>
+                <p>FPS: <span class="fps" id="fps">60</span></p>
+                <p>メモリ: <span class="memory" id="memory">0 MB</span></p>
+                <p>フレーム時間: <span id="frame-time">16.7 ms</span></p>
+            </div>
+            
+            <div class="instructions" id="instructions" style="display: none;">
+                <h3>操作方法</h3>
+                <div><span class="key">←→</span> 左右移動</div>
+                <div><span class="key">↓</span> 高速落下</div>
+                <div><span class="key">↑</span> 回転</div>
+                <div><span class="key">Space</span> 一気に落下</div>
+                <div><span class="key">P</span> 一時停止</div>
+                <div><span class="key">R</span> 再開</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import TetrisGame from '../src/presentation/main.js?v=20250902_01';
+        
+        let game;
+        let gameContainer;
+        let gameInfo;
+        let performanceInfo;
+        let instructions;
+        let pauseBtn;
+        let resetBtn;
+        let isPaused = false;
+        
+        // デバッグ用のログ関数（無効化可）
+        const DEBUG_ENABLED = false;
+        function debugLog(message, data = null) {
+            if (!DEBUG_ENABLED) return;
+            console.log(`[Tetris Game] ${message}`, data);
+        }
+        
+        // 初期化
+        function initGame() {
+            try {
+                debugLog('Initializing Tetris Game...');
+                
+                gameContainer = document.getElementById('game-content');
+                gameInfo = document.getElementById('game-info');
+                performanceInfo = document.getElementById('performance-info');
+                instructions = document.getElementById('instructions');
+                pauseBtn = document.getElementById('pause-btn');
+                resetBtn = document.getElementById('reset-btn');
+                
+                game = new TetrisGame(gameContainer);
+                // デバッグ/コンソール操作用に公開（必要時のみ）
+                if (DEBUG_ENABLED) {
+                    window.game = game;
+                }
+                debugLog('Tetris Game initialized successfully', game);
+                
+                // 初期化後の状態確認
+                debugLog('Current screen:', game.gameUI.getCurrentScreen());
+                debugLog('Container innerHTML length:', gameContainer.innerHTML.length);
+                
+                // メニューを明示的に表示（START GAMEを出す）
+                if (game && game.gameUI) {
+                    game.gameUI.showMenu(['Start Game', 'Settings', 'High Scores', 'Exit']);
+                    debugLog('Menu screen displayed (auto after init)');
+                }
+                
+                // ゲーム情報更新の定期実行
+                setInterval(updateGameInfo, 100);
+                setInterval(updatePerformanceInfo, 1000);
+                
+                debugLog('Tetris Game initialization completed');
+            } catch (error) {
+                debugLog('Error initializing Tetris Game:', error);
+                alert(`ゲーム初期化エラー: ${error.message}`);
+            }
+        }
+        
+        // ゲーム情報更新
+        function updateGameInfo() {
+            try {
+                if (!game) return;
+                
+                const gameState = game.getGameState();
+                const gameInfoData = game.getGameInfo();
+
+                // パネルはGameUIの描画で削除され得るため毎回取得
+                const gameInfoPanel = document.getElementById('game-info');
+                const instructionsPanel = document.getElementById('instructions');
+                if (!gameInfoPanel || !instructionsPanel) return;
+                
+                if (gameState.status === 'PLAYING') {
+                    gameInfoPanel.style.display = 'block';
+                    instructionsPanel.style.display = 'block';
+                    
+                    document.getElementById('score').textContent = gameInfoData.score.toLocaleString();
+                    document.getElementById('level').textContent = gameInfoData.level;
+                    document.getElementById('lines').textContent = gameInfoData.lines;
+                    document.getElementById('next-piece').textContent = gameInfoData.nextPiece;
+                    
+                    pauseBtn.disabled = false;
+                    resetBtn.disabled = false;
+                } else {
+                    gameInfoPanel.style.display = 'none';
+                    instructionsPanel.style.display = 'none';
+                    
+                    pauseBtn.disabled = true;
+                    resetBtn.disabled = true;
+                }
+            } catch (error) {
+                debugLog('Error updating game info:', error);
+            }
+        }
+        
+        // パフォーマンス情報更新
+        function updatePerformanceInfo() {
+            try {
+                if (!game) return;
+                
+                const perfInfo = game.getPerformanceInfo();
+                const perfPanel = document.getElementById('performance-info');
+                const fpsEl = document.getElementById('fps');
+                const memEl = document.getElementById('memory');
+                const ftEl = document.getElementById('frame-time');
+                if (!perfPanel || !fpsEl || !memEl || !ftEl) return;
+                
+                if (perfInfo && Object.keys(perfInfo).length > 0) {
+                    perfPanel.style.display = 'block';
+                    fpsEl.textContent = Math.round(perfInfo.fps || 60);
+                    const memLimit = performance.memory ? performance.memory.jsHeapSizeLimit : 0;
+                    const memMb = memLimit ? Math.round((perfInfo.memoryUsage || 0) * memLimit / 1024 / 1024) : 0;
+                    memEl.textContent = memMb + ' MB';
+                    ftEl.textContent = (perfInfo.frameTime || 16.7).toFixed(1) + ' ms';
+                } else {
+                    perfPanel.style.display = 'none';
+                }
+            } catch (error) {
+                debugLog('Error updating performance info:', error);
+            }
+        }
+        
+        // 一時停止/再開
+        window.togglePause = function() {
+            try {
+                if (!game) return;
+                
+                if (isPaused) {
+                    game.resume();
+                    pauseBtn.textContent = '一時停止';
+                    isPaused = false;
+                } else {
+                    game.pause();
+                    pauseBtn.textContent = '再開';
+                    isPaused = true;
+                    // UIに一時停止オーバーレイ
+                    const perfPanel = document.getElementById('performance-info');
+                    if (perfPanel) perfPanel.style.opacity = 0.6;
+                }
+            } catch (error) {
+                debugLog('Error toggling pause:', error);
+            }
+        };
+        
+        // ゲームリセット
+        window.resetGame = function() {
+            try {
+                if (!game) return;
+                
+                game.reset();
+                pauseBtn.textContent = '一時停止';
+                isPaused = false;
+                debugLog('Game reset');
+            } catch (error) {
+                debugLog('Error resetting game:', error);
+            }
+        };
+        
+        // メニュー表示
+        window.showMenu = function() {
+            try {
+                if (!game) return;
+                
+                game.gameUI.showMenu(['Start Game', 'Settings', 'High Scores', 'Exit']);
+                debugLog('Menu screen displayed');
+            } catch (error) {
+                debugLog('Error showing menu:', error);
+            }
+        };
+
+        // 直接ゲーム開始（デバッグ用）
+        window.startGame = function() {
+            try {
+                if (!game) return;
+                // メニュー経由と同等の選択
+                game.gameUI.selectMenuItem('Start Game');
+            } catch (error) {
+                debugLog('Error starting game via console:', error);
+            }
+        };
+        
+        // 設定表示
+        window.showSettings = function() {
+            try {
+                if (!game) return;
+                
+                const settings = {
+                    difficulty: 'normal',
+                    soundEnabled: true,
+                    musicVolume: 0.7,
+                    sfxVolume: 0.8
+                };
+                
+                game.gameUI.showSettings(settings);
+                debugLog('Settings screen displayed');
+            } catch (error) {
+                debugLog('Error showing settings:', error);
+            }
+        };
+        
+        // ページ読み込み完了後に初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            debugLog('DOM loaded, starting initialization...');
+            setTimeout(initGame, 100); // 少し遅延を入れて初期化
+        });
+        
+        // エラーハンドリング
+        window.addEventListener('error', (event) => {
+            debugLog('Global error:', event.error);
+        });
+        
+        window.addEventListener('unhandledrejection', (event) => {
+            debugLog('Unhandled promise rejection:', event.reason);
+        });
+        
+        // キーボードイベント
+        document.addEventListener('keydown', (event) => {
+            try {
+                if (!game) return;
+                
+                // ゲームが実行中の場合のみキー入力を処理
+                const gameState = game.getGameState();
+                if (gameState.status === 'PLAYING') {
+                    game._handleKeyPress(event.key);
+                }
+            } catch (error) {
+                debugLog('Error handling key press:', error);
+            }
+        });
+    </script>
+</body>
+</html>
