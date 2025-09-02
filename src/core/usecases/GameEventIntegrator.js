@@ -12,8 +12,6 @@
  * @developer との協力実装
  */
 
-import GameEventEmitter from './GameEventEmitter.js';
-
 /**
  * ゲームイベント統合クラス
  *
@@ -50,11 +48,8 @@ export default class GameEventIntegrator {
       ...config,
     };
 
-    // イベントエミッター
-    this.eventEmitter = new GameEventEmitter({
-      enableHistory: true,
-      maxHistorySize: 50,
-    });
+    // GameLogicのイベントエミッターを使用
+    this.eventEmitter = this.gameLogic.getEventEmitter();
 
     // イベントハンドラーの登録
     this.eventHandlers = new Map();
@@ -284,12 +279,18 @@ export default class GameEventIntegrator {
    * @returns {Object} 統計情報
    */
   getStats() {
+    // GameLogicのEventEmitterの統計を取得
+    const eventEmitterStats = this.eventEmitter.getStats();
+
     return {
       totalEventsProcessed: this.stats.totalEventsProcessed,
       totalEffectsTriggered: this.stats.totalEffectsTriggered,
-      eventsByType: Object.fromEntries(this.stats.eventsByType),
+      eventsByType: {
+        ...Object.fromEntries(this.stats.eventsByType),
+        ...eventEmitterStats.eventsByType, // EventEmitterの統計をマージ
+      },
       effectsByType: Object.fromEntries(this.stats.effectsByType),
-      eventEmitterStats: this.eventEmitter.getStats(),
+      eventEmitterStats: eventEmitterStats,
     };
   }
 
@@ -386,22 +387,9 @@ export default class GameEventIntegrator {
    * @private
    */
   _setupEventEmitter() {
-    // GameLogicからイベントエミッターを取得
-    if (this.gameLogic.getEventEmitter) {
-      const gameEventEmitter = this.gameLogic.getEventEmitter();
-
-      // GameLogicのイベントエミッターにイベントハンドラーを登録
-      for (const [eventName, handler] of this.eventHandlers) {
-        gameEventEmitter.on(eventName, handler);
-      }
-    }
-
-    // GameStateのイベントも監視（レベルアップイベント用）
-    if (this.gameLogic.gameState && this.gameLogic.gameState.addEventListener) {
-      this._levelUpHandler = eventData => {
-        this.handleLevelUp({ data: eventData });
-      };
-      this.gameLogic.gameState.addEventListener('levelUp', this._levelUpHandler);
+    // GameLogicのイベントエミッターにイベントハンドラーを登録
+    for (const [eventName, handler] of this.eventHandlers) {
+      this.eventEmitter.on(eventName, handler);
     }
   }
 

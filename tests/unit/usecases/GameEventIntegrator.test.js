@@ -30,6 +30,7 @@ describe('GameEventIntegrator', () => {
       startGame: jest.fn(),
       pauseGame: jest.fn(),
       resumeGame: jest.fn(),
+      getEventEmitter: jest.fn(() => mockEventEmitter),
     };
 
     mockEffectManager = {

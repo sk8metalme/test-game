@@ -27,6 +27,11 @@ export default class GameLogic {
     this.gameState = gameState;
     this.eventEmitter = eventEmitter || new GameEventEmitter();
 
+    // GameStateのレベルアップイベントをGameLogicのEventEmitterで中継
+    this.gameState.addEventListener('level.up', eventData => {
+      this.eventEmitter.emit('level.up', eventData);
+    });
+
     // 現在のピース
     this.currentPiece = null;
 
