@@ -25,6 +25,8 @@ import GameEventEmitter from '../core/usecases/GameEventEmitter.js';
 import ParticleSystem from '../core/usecases/ParticleSystem.js';
 import PerformanceOptimizationManager from '../core/usecases/PerformanceOptimizationManager.js';
 import PerformanceMonitor from '../core/usecases/PerformanceMonitor.js';
+import EffectManager from '../core/usecases/EffectManager.js';
+import GameEventIntegrator from '../core/usecases/GameEventIntegrator.js';
 
 export default class TetrisGame {
   /**
@@ -229,6 +231,15 @@ export default class TetrisGame {
         this.performanceOptimizer.destroy();
       }
 
+      // 【新規】エフェクトシステムの破棄
+      if (this.gameEventIntegrator) {
+        this.gameEventIntegrator.disconnect();
+      }
+
+      if (this.effectManager) {
+        this.effectManager.destroy && this.effectManager.destroy();
+      }
+
       console.log('Tetris game destroyed');
     } catch (error) {
       this._handleError('destroy', error);
@@ -245,6 +256,9 @@ export default class TetrisGame {
     // ゲーム状態とボード
     this.gameState = new GameState();
     this.board = new Board(10, 20);
+
+    // 【修正】イベントシステムを最初に初期化
+    this.eventEmitter = new GameEventEmitter();
 
     // ゲームロジック（引数順: board, gameState, eventEmitter）
     this.gameLogic = new GameLogic(this.board, this.gameState, this.eventEmitter);
@@ -269,11 +283,12 @@ export default class TetrisGame {
     this.canvasRenderer = null;
     this.renderer = null;
 
-    // イベントシステム
-    this.eventEmitter = new GameEventEmitter();
-
     // パーティクルシステム
     this.particleSystem = new ParticleSystem();
+
+    // エフェクトシステム（キャンバス生成後に初期化）
+    this.effectManager = null;
+    this.gameEventIntegrator = null;
 
     // パフォーマンス最適化
     this.performanceOptimizer = new PerformanceOptimizationManager();
@@ -320,14 +335,40 @@ export default class TetrisGame {
 
     // ゲームロジック初期化（初回ピース準備などはコンストラクタで済むため明示初期化は不要）
 
-    // ゲーム画面のキャンバス取得とレンダラー初期化
-    const canvas = this.container.querySelector('#game-canvas');
+    // 【修正】キャンバスIDを統一（#main-canvas）
+    let canvas = this.container.querySelector('#main-canvas');
+    if (!canvas) {
+      // 旧IDのキャンバスがあれば削除
+      const oldCanvas = this.container.querySelector('#game-canvas');
+      if (oldCanvas) {
+        oldCanvas.remove();
+      }
+
+      // 新しいキャンバスを作成
+      canvas = document.createElement('canvas');
+      canvas.id = 'main-canvas';
+      this.container.appendChild(canvas);
+    }
+
     if (canvas) {
       // CanvasRenderer/OptimizedRenderer をキャンバスで初期化
       this.canvasRenderer = new CanvasRenderer(canvas);
       this.renderer = new OptimizedRenderer(canvas, { enableDoubleBuffering: true });
+
       // パーティクルシステムにもキャンバスを設定
       this.particleSystem.setCanvas(canvas);
+
+      // 【新規】EffectManagerとGameEventIntegratorを統合
+      try {
+        this.effectManager = new EffectManager(canvas);
+        this.gameEventIntegrator = new GameEventIntegrator(this.gameLogic, this.effectManager);
+        this.gameEventIntegrator.integrate();
+
+        console.log('Effect system integrated successfully');
+      } catch (error) {
+        console.error('Effect system integration failed:', error);
+        // エフェクトシステム統合失敗時も継続可能
+      }
     }
 
     // パフォーマンス最適化は自動開始済みのため明示初期化は不要
@@ -411,15 +452,15 @@ export default class TetrisGame {
           sidebar.querySelectorAll('canvas').forEach(el => el.remove());
         }
 
-        // 専用キャンバス（#main-canvas）を用意
-        let canvas = this.container.querySelector('.game-board #main-canvas');
+        // 【修正】統一されたキャンバス（#main-canvas）を取得
+        let canvas = this.container.querySelector('#main-canvas');
         if (!canvas && boardContainer) {
           canvas = document.createElement('canvas');
           canvas.id = 'main-canvas';
           boardContainer.appendChild(canvas);
         }
         if (canvas) {
-          // 旧IDのキャンバスは削除
+          // 旧IDのキャンバスは削除（互換性のため）
           this.container.querySelectorAll('#game-canvas').forEach(el => el.remove());
           canvas.style.display = 'block';
           canvas.style.margin = '0 auto';
