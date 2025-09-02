@@ -4,7 +4,8 @@
   "description": "Tetris Generation AI Game",
   "main": "src/presentation/main.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --testPathIgnorePatterns=e2e",
+    "test:e2e": "jest --testPathPattern=e2e",
     "test:fast": "jest --testPathIgnorePatterns=tests/performance/",
     "test:performance": "jest --config jest.performance.config.js",
     "test:watch": "jest --watch",
@@ -26,6 +27,7 @@
     "jsdom": "^23.0.0",
     "lint-staged": "^16.1.5",
     "prettier": "^3.1.0",
+    "puppeteer": "^24.18.0",
     "webpack": "^5.89.0",
     "webpack-cli": "^5.1.0",
     "webpack-dev-server": "^4.15.0"
@@ -36,7 +38,7 @@
       "prettier --write"
     ],
     "tests/**/*.js": [
-      "eslint --fix", 
+      "eslint --fix",
       "prettier --write"
     ]
   },

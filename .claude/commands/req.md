@@ -24,6 +24,7 @@ description: ワークフローループ実行（計画→実装→レビュー�
 10. @manager-agent → 各種エージェントへの改善指示
 11. @developer → ghコマンドでPR作成
 12. @developer, @test-developer →　PRを確認してCIが成功しているか確認
+13. @manager-pj → 進捗確認を実施し次のタスク決定を行う
 ```
 
 ### 重要な動作仕様

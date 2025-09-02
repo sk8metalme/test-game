@@ -14,7 +14,9 @@ module.exports = {
   // Test path ignore patterns - Temporarily include performance tests
   testPathIgnorePatterns: [
     // '<rootDir>/tests/performance/', // 一時的にコメントアウト
-    '<rootDir>/node_modules/'
+    '<rootDir>/node_modules/',
+    // CI環境でのE2Eテスト除外
+    ...(process.env.CI ? ['<rootDir>/tests/e2e/'] : [])
   ],
   
   // Module paths - updated for new structure

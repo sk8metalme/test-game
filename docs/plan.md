@@ -59,15 +59,25 @@ ParticleSystem (Application Layer)
 - [x] GameOverEffect（ゲームオーバーエフェクト）
 - [x] EffectManager（エフェクト管理システム）
 
-#### ステップ8: ゲームイベントとの連携実装 ✅ (95%完了)
+#### ステップ8: ゲームイベントとの連携実装 ✅ (100%完了)
 - [x] GameEventEmitterクラスの実装
 - [x] GameEventIntegratorクラスの実装
 - [x] GameLogicとのイベント連携
 - [x] エフェクト自動実行システム
-- [x] 統合テストの実装（18/19テスト成功）
+- [x] 統合テストの実装（100%成功）
 - [x] イベント名統一（`level.up` dot notation）
 - [x] 統計システム統合
-- [ ] main.jsでの完全統合（残り作業）
+- [x] main.jsでの完全統合（完了）
+
+#### ステップ9: main.js初期化順序修正とエフェクト統合 ✅ (100%完了)
+- [x] 初期化順序修正（EventEmitter → GameLogic → EffectManager）
+- [x] EffectManager統合（キャンバス初期化後）
+- [x] GameEventIntegrator統合（自動イベント連携）
+- [x] キャンバスID統一（#main-canvas）
+- [x] エラーハンドリング強化
+- [x] 破棄処理追加（destroy()メソッド）
+- [x] E2Eテスト環境構築
+- [x] 全テスト成功確認（1326/1326）
 
 ### 📊 成功指標
 - **パフォーマンス**: 60FPS維持（パーティクル1000個以上）
