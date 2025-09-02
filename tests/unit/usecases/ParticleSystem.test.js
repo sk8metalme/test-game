@@ -166,8 +166,13 @@ describe('ParticleSystem', () => {
       expect(system.config.cleanupInterval).toBe(5000);
     });
 
-    test('Canvasが必須である', () => {
-      expect(() => new ParticleSystem()).toThrow('ParticleSystem: Canvas要素が必要です');
+    test('Canvas未設定でも生成できる（遅延セット想定）', () => {
+      const sys = new ParticleSystem();
+      expect(sys).toBeDefined();
+      // canvas未設定のため、rendererは生成されない想定
+      expect(sys.renderer).toBeNull();
+      // renderは安全に何もしない
+      expect(() => sys.render()).not.toThrow();
     });
   });
 
