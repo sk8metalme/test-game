@@ -78,10 +78,10 @@ export default class AdaptiveDifficultyController {
         timestamp: Date.now(),
       };
     } catch (error) {
-      console.error(
-        'AdaptiveDifficultyController: パフォーマンス分析でエラーが発生しました:',
-        error
-      );
+      // console.error(
+      //   'AdaptiveDifficultyController: パフォーマンス分析でエラーが発生しました:',
+      //   error
+      // );
       return {
         performance: 0.5,
         trend: 'stable',

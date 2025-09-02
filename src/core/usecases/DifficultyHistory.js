@@ -531,7 +531,7 @@ export default class DifficultyHistory {
 
       localStorage.setItem(this.config.storageKey, JSON.stringify(dataToSave));
     } catch (error) {
-      console.error('DifficultyHistory: 履歴の保存でエラーが発生しました:', error);
+      // console.error('DifficultyHistory: 履歴の保存でエラーが発生しました:', error);
     }
   }
 
@@ -552,7 +552,7 @@ export default class DifficultyHistory {
         this.history = parsedData || [];
       }
     } catch (error) {
-      console.error('DifficultyHistory: 履歴の読み込みでエラーが発生しました:', error);
+      // console.error('DifficultyHistory: 履歴の読み込みでエラーが発生しました:', error);
       this.history = [];
     }
   }

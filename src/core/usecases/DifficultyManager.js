@@ -101,7 +101,7 @@ export default class DifficultyManager {
         this.evaluateAndAdjustDifficulty(skillData);
       }
     } catch (error) {
-      console.error('DifficultyManager: 定期評価でエラーが発生しました:', error);
+      // console.error('DifficultyManager: 定期評価でエラーが発生しました:', error);
     }
   }
 
@@ -138,7 +138,7 @@ export default class DifficultyManager {
       this.emit('skillEvaluated', evaluation);
       return evaluation;
     } catch (error) {
-      console.error('DifficultyManager: スキル評価でエラーが発生しました:', error);
+      // console.error('DifficultyManager: スキル評価でエラーが発生しました:', error);
       return { skillLevel: 0.5, confidence: 0, trend: 'stable' };
     }
   }
@@ -257,7 +257,7 @@ export default class DifficultyManager {
       this.emit('adaptiveAdjustment', analysis);
       return analysis;
     } catch (error) {
-      console.error('DifficultyManager: パフォーマンス分析でエラーが発生しました:', error);
+      // console.error('DifficultyManager: パフォーマンス分析でエラーが発生しました:', error);
       return { performance: 0.5, trend: 'stable', recommendation: null };
     }
   }
@@ -398,29 +398,21 @@ export default class DifficultyManager {
       throw new Error('DifficultyManager: プリセット機能が無効です');
     }
 
-    try {
-      const preset = this.presets.loadPreset(presetName);
-      this.applyDifficultySettings(preset);
+    const preset = this.presets.loadPreset(presetName);
+    this.applyDifficultySettings(preset);
 
-      // 履歴の記録
-      if (this.config.enableHistory) {
-        this.history.recordChange({
-          changeType: 'preset_change',
-          oldSettings: { ...this.currentDifficulty },
-          newSettings: preset,
-          reason: `プリセット変更: ${presetName}`,
-        });
-      }
-
-      this.emit('presetChanged', { presetName, settings: preset });
-      return preset;
-    } catch (error) {
-      console.error(
-        `DifficultyManager: プリセット '${presetName}' の読み込みでエラーが発生しました:`,
-        error
-      );
-      throw error;
+    // 履歴の記録
+    if (this.config.enableHistory) {
+      this.history.recordChange({
+        changeType: 'preset_change',
+        oldSettings: { ...this.currentDifficulty },
+        newSettings: preset,
+        reason: `プリセット変更: ${presetName}`,
+      });
     }
+
+    this.emit('presetChanged', { presetName, settings: preset });
+    return preset;
   }
 
   /**
@@ -435,18 +427,13 @@ export default class DifficultyManager {
       throw new Error('DifficultyManager: プリセット機能が無効です');
     }
 
-    try {
-      const result = this.presets.saveCustomPreset(name, settings);
+    const result = this.presets.saveCustomPreset(name, settings);
 
-      if (result) {
-        this.emit('customPresetSaved', { name, settings });
-      }
-
-      return result;
-    } catch (error) {
-      console.error(`DifficultyManager: プリセット '${name}' の保存でエラーが発生しました:`, error);
-      throw error;
+    if (result) {
+      this.emit('customPresetSaved', { name, settings });
     }
+
+    return result;
   }
 
   /**
@@ -559,7 +546,7 @@ export default class DifficultyManager {
         try {
           listener(data);
         } catch (error) {
-          console.error(`DifficultyManager event error:`, error);
+          // console.error(`DifficultyManager event error:`, error);
         }
       });
     }
