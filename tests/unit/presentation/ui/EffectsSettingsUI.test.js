@@ -251,24 +251,26 @@ describe('EffectsSettingsUI', () => {
       expect(previewSection.style.display).not.toBe('none');
     });
 
-    test('全エフェクトプレビューが正常に動作する', done => {
-      const previewAllButton = container.querySelector('.preview-all-effects');
+    test('全エフェクトプレビューが正常に動作する', () => {
+      jest.useFakeTimers();
 
+      const previewAllButton = container.querySelector('.preview-all-effects');
       previewAllButton.click();
 
-      // setTimeoutで順次実行されるため、少し待つ
-      setTimeout(() => {
-        expect(mockEffectManager.playEffect).toHaveBeenCalledTimes(5);
-        expect(mockEffectManager.playEffect).toHaveBeenCalledWith('line-clear', expect.any(Object));
-        expect(mockEffectManager.playEffect).toHaveBeenCalledWith('t-spin', expect.any(Object));
-        expect(mockEffectManager.playEffect).toHaveBeenCalledWith(
-          'perfect-clear',
-          expect.any(Object)
-        );
-        expect(mockEffectManager.playEffect).toHaveBeenCalledWith('level-up', expect.any(Object));
-        expect(mockEffectManager.playEffect).toHaveBeenCalledWith('game-over', expect.any(Object));
-        done();
-      }, 2500); // 5 * 500ms + バッファ
+      // すべてのタイマーを実行
+      jest.runAllTimers();
+
+      expect(mockEffectManager.playEffect).toHaveBeenCalledTimes(5);
+      expect(mockEffectManager.playEffect).toHaveBeenCalledWith('line-clear', expect.any(Object));
+      expect(mockEffectManager.playEffect).toHaveBeenCalledWith('t-spin', expect.any(Object));
+      expect(mockEffectManager.playEffect).toHaveBeenCalledWith(
+        'perfect-clear',
+        expect.any(Object)
+      );
+      expect(mockEffectManager.playEffect).toHaveBeenCalledWith('level-up', expect.any(Object));
+      expect(mockEffectManager.playEffect).toHaveBeenCalledWith('game-over', expect.any(Object));
+
+      jest.useRealTimers();
     });
   });
 
@@ -302,16 +304,20 @@ describe('EffectsSettingsUI', () => {
       );
     });
 
-    test('統計情報の自動更新が正常に動作する', done => {
+    test('統計情報の自動更新が正常に動作する', () => {
+      jest.useFakeTimers();
+
       // 短いインターバルで自動更新を有効にする
       effectsSettingsUI.setAutoUpdateStats(true, 100);
 
-      setTimeout(() => {
-        expect(mockEffectManager.getStats).toHaveBeenCalledTimes(2); // 初期表示 + 自動更新
-        effectsSettingsUI.setAutoUpdateStats(false);
-        done();
-      }, 200);
-    }, 5000);
+      // 時間を進める
+      jest.advanceTimersByTime(200);
+
+      expect(mockEffectManager.getStats).toHaveBeenCalledTimes(2); // 初期表示 + 自動更新
+      effectsSettingsUI.setAutoUpdateStats(false);
+
+      jest.useRealTimers();
+    });
   });
 
   describe('設定の保存と復元', () => {

@@ -227,7 +227,9 @@ describe('PerformanceMonitorUI', () => {
       expect(particleDisplay.textContent).toContain('1500');
     });
 
-    test('自動更新が正常に動作する', done => {
+    test('自動更新が正常に動作する', () => {
+      jest.useFakeTimers();
+
       performanceMonitorUI = new PerformanceMonitorUI(
         container,
         mockPerformanceMonitor,
@@ -237,12 +239,14 @@ describe('PerformanceMonitorUI', () => {
       performanceMonitorUI.show();
       performanceMonitorUI.startMonitoring();
 
-      setTimeout(() => {
-        expect(mockPerformanceMonitor.getMetrics).toHaveBeenCalledTimes(2); // 初期表示 + 自動更新
-        performanceMonitorUI.stopMonitoring();
-        done();
-      }, 100);
-    }, 5000);
+      // 時間を進める
+      jest.advanceTimersByTime(100);
+
+      expect(mockPerformanceMonitor.getMetrics).toHaveBeenCalledTimes(2); // 初期表示 + 自動更新
+      performanceMonitorUI.stopMonitoring();
+
+      jest.useRealTimers();
+    });
   });
 
   describe('パフォーマンス警告', () => {

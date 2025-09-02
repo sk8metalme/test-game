@@ -251,11 +251,21 @@ describe('ModernGameUI', () => {
     test('UI初期化イベントが正常に発火される', () => {
       const mockCallback = jest.fn();
 
+      // インスタンス作成前にイベントリスナーを登録（継承される）
+      const originalEmit = ModernGameUI.prototype.emit;
+      ModernGameUI.prototype.emit = function (event, data) {
+        if (event === 'uiInitialized') {
+          mockCallback();
+        }
+        return originalEmit.call(this, event, data);
+      };
+
       const newModernGameUI = new ModernGameUI(container);
-      newModernGameUI.on('uiInitialized', mockCallback);
 
       expect(mockCallback).toHaveBeenCalled();
 
+      // プロトタイプを復元
+      ModernGameUI.prototype.emit = originalEmit;
       newModernGameUI.destroy();
     });
   });
