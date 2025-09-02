@@ -1,6 +1,6 @@
 import ParticlePool from '../../../src/core/usecases/ParticlePool';
 import { Particle } from '../../../src/core/entities/Particle';
-import ObjectPool from '../../../src/core/usecases/ObjectPool';
+// import ObjectPool from '../../../src/core/usecases/ObjectPool';
 
 // ObjectPoolのモックを無効化して実際のクラスを使用
 jest.unmock('../../../src/core/usecases/ObjectPool');
@@ -304,7 +304,7 @@ describe('ParticlePool', () => {
         cleanupInterval: 0, // 無効な値
       };
 
-      const particlePool = new ParticlePool(config);
+      particlePool = new ParticlePool(config);
 
       // デフォルト値が適用されることを確認
       expect(particlePool.optimizationThreshold).toBe(0.1); // Math.max(-1, 0.1) = 0.1
