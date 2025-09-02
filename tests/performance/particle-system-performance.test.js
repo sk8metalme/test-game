@@ -229,7 +229,7 @@ describe('ParticleSystem Performance Tests', () => {
 
       // 3. 長時間の実行
       const startTime = performance.now();
-      const initialStats = optimizedSystem.getSystemStats();
+      const _initialStats = optimizedSystem.getSystemStats();
 
       for (let i = 0; i < 300; i++) {
         // 5秒間の実行
@@ -322,7 +322,7 @@ describe('ParticleSystem Performance Tests', () => {
       // 4. パフォーマンス分析
       const avgFrameTime = frameTimes.reduce((a, b) => a + b, 0) / frameTimes.length;
       const maxFrameTime = Math.max(...frameTimes);
-      const minFrameTime = Math.min(...frameTimes);
+      const _minFrameTime = Math.min(...frameTimes);
       const fps = 1000 / avgFrameTime;
 
       // 5. 60FPS維持の確認

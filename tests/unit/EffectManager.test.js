@@ -1,8 +1,8 @@
 import EffectManager from '../../src/core/usecases/EffectManager.js';
-import LineClearEffect from '../../src/core/usecases/LineClearEffect.js';
-import TSpinEffect from '../../src/core/usecases/TSpinEffect.js';
-import LevelUpEffect from '../../src/core/usecases/LevelUpEffect.js';
-import GameOverEffect from '../../src/core/usecases/GameOverEffect.js';
+// import LineClearEffect from '../../src/core/usecases/LineClearEffect.js';
+// import TSpinEffect from '../../src/core/usecases/TSpinEffect.js';
+// import LevelUpEffect from '../../src/core/usecases/LevelUpEffect.js';
+// import GameOverEffect from '../../src/core/usecases/GameOverEffect.js';
 
 // モックCanvasの作成
 const createMockCanvas = () => {
@@ -32,13 +32,13 @@ const createMockCanvas = () => {
 };
 
 describe('EffectManager', () => {
-  let mockCanvas, mockContext;
+  let mockCanvas, _mockContext;
   let effectManager;
 
   beforeEach(() => {
     const mock = createMockCanvas();
     mockCanvas = mock.canvas;
-    mockContext = mock.context;
+    _mockContext = mock.context;
 
     effectManager = new EffectManager(mockCanvas, {
       maxConcurrentEffects: 5,

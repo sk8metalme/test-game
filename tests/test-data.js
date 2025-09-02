@@ -390,13 +390,13 @@ export const INTEGRATION_SCENARIOS = {
 // Test utilities for integration and advanced testing
 export const TestUtils = {
   // Create board with specific pattern
-  createBoardWithPattern(pattern) {
+  createBoardWithPattern(_pattern) {
     // Note: This requires Board to be imported separately by the test file
     throw new Error('createBoardWithPattern requires Board class to be passed as parameter');
   },
 
   // Create random filled board
-  createRandomBoard(fillPercentage = 0.3) {
+  createRandomBoard(_fillPercentage = 0.3) {
     // Note: This requires Board to be imported separately by the test file
     throw new Error('createRandomBoard requires Board class to be passed as parameter');
   },
