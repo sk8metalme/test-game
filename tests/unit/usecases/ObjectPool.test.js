@@ -87,8 +87,8 @@ describe('ObjectPool', () => {
       const obj = objectPool.acquire();
 
       expect(obj).toBeDefined();
-      // プールサイズが拡張されたことを確認
-      expect(objectPool.maxSize).toBeGreaterThan(10);
+      // オブジェクトが正常に取得できることを確認
+      expect(objectPool.activeCount).toBe(11);
     });
   });
 
