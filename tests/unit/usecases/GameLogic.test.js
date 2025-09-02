@@ -142,8 +142,14 @@ describe('GameLogic', () => {
 
       // 回転の成功/失敗に関係なく、適切な状態であることを確認
       if (result.success) {
-        // 回転が成功した場合、回転状態が変更されていることを確認
-        expect(piece.rotationState).not.toBe(originalRotation);
+        // 回転が成功した場合、回転状態が変更されているか、またはO字ピースの場合は変更されない
+        if (piece.type === 'O') {
+          // O字ピースは回転しても形状が変わらない
+          expect(piece.rotationState).toBe(originalRotation);
+        } else {
+          // 他のピースは回転状態が変更される
+          expect(piece.rotationState).not.toBe(originalRotation);
+        }
         // 回転状態が有効な範囲内であることを確認
         expect(piece.rotationState).toBeGreaterThanOrEqual(0);
         expect(piece.rotationState).toBeLessThan(4);
