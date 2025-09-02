@@ -14,15 +14,18 @@
  */
 
 import Tetromino from '../entities/Tetromino.js';
+import GameEventEmitter from './GameEventEmitter.js';
 
 export default class GameLogic {
   /**
    * @param {Board} board - ゲームボードエンティティ
    * @param {GameState} gameState - ゲーム状態エンティティ
+   * @param {GameEventEmitter} [eventEmitter] - イベントエミッター
    */
-  constructor(board, gameState) {
+  constructor(board, gameState, eventEmitter = null) {
     this.board = board;
     this.gameState = gameState;
+    this.eventEmitter = eventEmitter || new GameEventEmitter();
 
     // 現在のピース
     this.currentPiece = null;
@@ -58,6 +61,12 @@ export default class GameLogic {
       this.currentPiece = this._spawnPiece();
       this.canHold = true;
 
+      // ゲーム開始イベントを発行
+      this.eventEmitter.emit('game.started', {
+        level: this.gameState.level,
+        piece: this.currentPiece,
+      });
+
       return {
         success: true,
         piece: this.currentPiece,
@@ -84,6 +93,13 @@ export default class GameLogic {
     }
 
     this.gameState.setStatus('PAUSED');
+
+    // ゲーム一時停止イベントを発行
+    this.eventEmitter.emit('game.paused', {
+      level: this.gameState.level,
+      score: this.gameState.score,
+    });
+
     return {
       success: true,
     };
@@ -102,6 +118,13 @@ export default class GameLogic {
     }
 
     this.gameState.setStatus('PLAYING');
+
+    // ゲーム再開イベントを発行
+    this.eventEmitter.emit('game.resumed', {
+      level: this.gameState.level,
+      score: this.gameState.score,
+    });
+
     return {
       success: true,
     };
@@ -416,6 +439,15 @@ export default class GameLogic {
     // ライン種別判定
     const lineTypes = this._getLineTypes(clearResult.linesCleared);
 
+    // ライン削除イベントを発行
+    this.eventEmitter.emit('lines.cleared', {
+      lines: clearResult.clearedLines || [],
+      count: clearResult.linesCleared,
+      type: lineTypes[0] || 'single',
+      score: lineScore,
+      tspin: false, // T-Spin判定は別途実装
+    });
+
     return {
       linesCleared: clearResult.linesCleared,
       lineTypes: lineTypes,
@@ -441,6 +473,15 @@ export default class GameLogic {
       // ゲームオーバー
       this.gameState.setStatus('GAME_OVER');
       this.gameState.incrementTotalGames();
+
+      // ゲームオーバーイベントを発行
+      this.eventEmitter.emit('game.ended', {
+        score: this.gameState.score,
+        level: this.gameState.level,
+        lines: this.gameState.lines,
+        time: this.gameState.gameTime,
+        statistics: this.gameState.statistics,
+      });
 
       return {
         success: false,
@@ -838,6 +879,15 @@ export default class GameLogic {
    */
   _resetLockTimer() {
     this.lockTimer = 0;
+  }
+
+  /**
+   * イベントエミッターを取得する
+   *
+   * @returns {GameEventEmitter} イベントエミッター
+   */
+  getEventEmitter() {
+    return this.eventEmitter;
   }
 
   /**
