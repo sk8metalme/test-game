@@ -316,10 +316,10 @@ describe('GameState Entity', () => {
     });
 
     test('落下速度がレベルに応じて計算される', () => {
-      expect(gameState.getDropInterval()).toBeCloseTo(800, 0); // レベル1: 約800ms
+      expect(gameState.getDropInterval()).toBeCloseTo(416.75, 0); // レベル1: 新しい速度
 
       gameState.setLevel(5);
-      expect(gameState.getDropInterval()).toBeLessThan(1000);
+      expect(gameState.getDropInterval()).toBeLessThan(500);
 
       const level5Interval = gameState.getDropInterval();
       gameState.setLevel(10);

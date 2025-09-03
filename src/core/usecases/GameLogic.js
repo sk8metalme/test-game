@@ -163,11 +163,11 @@ export default class GameLogic {
   }
 
   /**
-   * ネクストピースを取得
-   * @returns {Array<Tetromino>}
+   * 次のピース配列を取得
+   * @returns {Array<Tetromino>} 次のピース配列
    */
   getNextPieces() {
-    return this.nextPieces.slice(0, 3);
+    return this.nextPieces ? this.nextPieces.slice(0, 3) : [];
   }
 
   /**
