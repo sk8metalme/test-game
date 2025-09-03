@@ -539,11 +539,11 @@ export class GameState {
    * @returns {number} 落下間隔（ミリ秒）
    */
   getDropInterval() {
-    // レベルに基づく落下速度の計算
+    // レベルに基づく落下速度の計算（速くした）
     // フレームレート: 60FPS (16.67ms/frame)
     const baseFrames = Math.max(
       1, // 最低1フレーム
-      Math.floor(48 - (this.level - 1) * 3)
+      Math.floor(25 - (this.level - 1) * 2) // より速い落下速度
     );
 
     return Math.max(16.67, baseFrames * 16.67); // 最低1フレーム間隔
